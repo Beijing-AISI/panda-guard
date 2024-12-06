@@ -11,10 +11,14 @@ from jailbreakpipe.llms import HuggingFaceLLMConfig
 
 
 @dataclass
-class PairAttackerLLMConfig(HuggingFaceLLMConfig):
+class PairAttackerLLMConfig(BaseLLMConfig):
     """
     config file for PairAttackerLLM
     """
+
+    llm_type: str = field(default="PairAttackerLLM")
+    model_name: [str, Any] = field(default=None)
+    device_map: str = field(default="auto")
 
 
 @register_llm
