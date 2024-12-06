@@ -10,10 +10,17 @@ from jailbreakpipe.llms import BaseLLM, BaseLLMConfig, LLMGenerateConfig
 from jailbreakpipe.llms import HuggingFaceLLMConfig
 
 
-@register_llm
-class HuggingFaceContinualLLM(BaseLLM):
+@dataclass
+class PairAttackerLLMConfig(HuggingFaceLLMConfig):
     """
-    Hugging Face Language Model Implementation.
+    config file for PairAttackerLLM
+    """
+
+
+@register_llm
+class PairAttackerLLM(BaseLLM):
+    """
+    Hugging Face Language Model Implementation for PAIR attacker.
     Set tokenizer.apply_chat_template 'continue_final_message=True'. Remove closure symbol of input message
 
     :param config: Configuration for Hugging Face LLM.  用于模型配置
@@ -21,7 +28,7 @@ class HuggingFaceContinualLLM(BaseLLM):
 
     def __init__(
         self,
-        config: HuggingFaceLLMConfig,
+        config: PairAttackerLLMConfig,
     ):
         super().__init__(config)
 
@@ -88,10 +95,12 @@ class HuggingFaceContinualLLM(BaseLLM):
 
         # Extract the generated tokens (excluding the input prompt)
         outputs_truncated = outputs.sequences[0][len(inputs["input_ids"][0]) :]
-        response = self.tokenizer.decode(outputs_truncated, skip_special_tokens=True)
+        generated_content = self.tokenizer.decode(
+            outputs_truncated, skip_special_tokens=True
+        )
 
-        # Add the generated response to the message list
-        messages.append({"role": "assistant", "content": response})
+        # attach generated content to the end of value of key "content"
+        messages[-1]["content"] += generated_content
 
         # Update internal states (optional, depends on your implementation)
         self.update(
@@ -113,55 +122,6 @@ class HuggingFaceContinualLLM(BaseLLM):
 
         return messages
 
-    def batch_generate(
-        self,
-        batch_messages: List[List[Dict[str, str]]],
-        config: LLMGenerateConfig,
-    ) -> List[List[Dict[str, str]]]:
-        """
-        Generate responses for a batch of messages in a single call.
-
-        :param batch_messages: List of batches of messages.  批量生成的消息列表
-        :param config: Configuration for LLM generation.  生成配置
-        :return: List of generated responses for each batch.  返回每个批量的生成应答列表
-        """
-        if len(batch_messages) == 0:
-            return []
-
-        # Format prompts for the entire batch
-        batch_prompts = [
-            self.tokenizer.apply_chat_template(
-                messages, tokenize=False, continue_final_message=True
-            )
-            for messages in batch_messages
-        ]
-        # Tokenize the batch of prompts
-        inputs = self.tokenizer(
-            batch_prompts, return_tensors="pt", padding=True, truncation=True
-        ).to(self.model.device)
-
-        # Use model's generate method to handle batch generation
-        outputs = self.model.generate(
-            **inputs,
-            max_new_tokens=config.max_n_tokens,
-            temperature=config.temperature,
-            do_sample=(config.temperature > 0),
-            return_dict_in_generate=True,
-            output_scores=config.logprobs,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
-
-        # Decode the outputs and create the response format
-        generated_responses = []
-        for i, output in enumerate(outputs.sequences):
-            response_text = self.tokenizer.decode(
-                output[len(inputs["input_ids"][i]) :], skip_special_tokens=True
-            )
-            batch_messages[i].append({"role": "assistant", "content": response_text})
-            generated_responses.append(batch_messages[i])
-
-        return generated_responses
-
     def evaluate_log_likelihood(
         self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ) -> List[float]:
@@ -182,7 +142,7 @@ class HuggingFaceContinualLLM(BaseLLM):
 
         # Prepare the prompt with the last message dropped (to isolate the log likelihood for the last message)
         prompt_formatted_dropped = self.tokenizer.apply_chat_template(
-            messages[:-1], tokenize=False, add_generation_prompt=True
+            messages[:-1], tokenize=False, continue_final_message=True
         )
         inputs_dropped = self.tokenizer(
             prompt_formatted_dropped, return_tensors="pt"
@@ -213,17 +173,17 @@ if __name__ == "__main__":
         max_n_tokens=128, temperature=1.0, logprobs=True, seed=42
     )
 
-    config = HuggingFaceLLMConfig(
+    config = PairAttackerLLMConfig(
         model_name="Qwen/Qwen2-7B-Instruct",
         device_map="cuda:0",
     )
 
-    llm = HuggingFaceContinualLLM(config=config)
+    llm = PairAttackerLLM(config=config)
 
     messages = [
         {"role": "user", "content": "How to make a bomb?"},
         {"role": "assistant", "content": "Sorry,"},
     ]
 
-    results = llm.evaluate_log_likelihood(messages, llm_gen_config)
-    print(results, len(results))
+    res = llm.generate(messages, llm_gen_config)
+    print(res)
