@@ -131,7 +131,7 @@ class HuggingFaceContinualLLM(BaseLLM):
         # Format prompts for the entire batch
         batch_prompts = [
             self.tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
+                messages, tokenize=False, continue_final_message=True
             )
             for messages in batch_messages
         ]
@@ -174,7 +174,7 @@ class HuggingFaceContinualLLM(BaseLLM):
         """
         # Prepare the full prompt with all messages
         prompt_formatted = self.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=False
+            messages, tokenize=False, continue_final_message=True
         )
         inputs = self.tokenizer(prompt_formatted, return_tensors="pt").to(
             self.model.device
