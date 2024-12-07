@@ -53,8 +53,8 @@ def load_class(config_cls_name: str) -> Any:
     :return: The class object corresponding to the given name.
              对应给定名称的类对象。
     """
-    module = importlib.import_module('jailbreakpipe.role')
-    return getattr(module, config_cls_name + 'Config')
+    module = importlib.import_module("jailbreakpipe.role")
+    return getattr(module, config_cls_name + "Config")
 
 
 def parse_nested_config(config_cls, config_dict: Dict[str, Any]):
@@ -76,7 +76,9 @@ def parse_nested_config(config_cls, config_dict: Dict[str, Any]):
         if "llm_gen_config" in key:
             nested_config_dict[key] = getattr(module, "LLMGenerateConfig")(**value)
         elif "llm_config" in key:
-            nested_config_dict[key] = getattr(module, value["llm_type"] + 'Config')(**value)
+            nested_config_dict[key] = getattr(module, value["llm_type"] + "Config")(
+                **value
+            )
         else:
             nested_config_dict[key] = value
     return config_cls(**nested_config_dict)
@@ -129,18 +131,22 @@ def get_gpu_memory_usage(device: str) -> Tuple[int, int, int]:
     :return: A tuple containing the total, used, and free memory in MB.
              包含总内存、已用内存和可用内存的元组（以MB为单位）。
     """
-    gpu_id = device.split(':')[-1]
+    gpu_id = device.split(":")[-1]
     result = subprocess.run(
-        ['nvidia-smi', '--query-gpu=memory.total,memory.used,memory.free', '--format=csv,nounits,noheader',
-         '--id=' + gpu_id],
+        [
+            "nvidia-smi",
+            "--query-gpu=memory.total,memory.used,memory.free",
+            "--format=csv,nounits,noheader",
+            "--id=" + gpu_id,
+        ],
         stdout=subprocess.PIPE,
-        encoding='utf-8'
+        encoding="utf-8",
     )
 
     # Parse the output from nvidia-smi.
     # 解析nvidia-smi的输出。
     output = result.stdout.strip()
-    total_mem, used_mem, free_mem = map(int, output.split(', '))
+    total_mem, used_mem, free_mem = map(int, output.split(", "))
     return total_mem, used_mem, free_mem
 
 
@@ -162,11 +168,16 @@ def wait_for_gpu_memory(device: str, threshold: float = 0.8, check_interval: int
         free_ratio = free_mem / total_mem
 
         print(
-            f"GPU {device}: Total: {total_mem}MB, Used: {used_mem}MB, Free: {free_mem}MB ({free_ratio * 100:.2f}% free)")
+            f"GPU {device}: Total: {total_mem}MB, Used: {used_mem}MB, Free: {free_mem}MB ({free_ratio * 100:.2f}% free)"
+        )
 
         if free_ratio >= threshold:
-            print(f"GPU {device} has more than {threshold * 100}% free memory. Proceeding...")
+            print(
+                f"GPU {device} has more than {threshold * 100}% free memory. Proceeding..."
+            )
             break
 
-        print(f"Waiting for GPU {device} to have more than {threshold * 100}% free memory...")
+        print(
+            f"Waiting for GPU {device} to have more than {threshold * 100}% free memory..."
+        )
         time.sleep(check_interval)

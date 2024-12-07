@@ -12,3 +12,4 @@ chat.ipynb
 examples/check_results.py
 results/
 .vscode
+cmd_jbb.sh
