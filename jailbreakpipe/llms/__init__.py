@@ -16,7 +16,6 @@ from jailbreakpipe.llms.oai import (
 )
 from jailbreakpipe.llms.hf import HuggingFaceLLM, HuggingFaceLLMConfig
 from jailbreakpipe.llms.llm_registry import LLMS, create_llm
-from jailbreakpipe.llms.pair_hf import PairAttackerHFLLM, PairAttackerHFLLMConfig
 
 __all__ = [
     "BaseLLM",
@@ -30,6 +29,4 @@ __all__ = [
     "HuggingFaceLLMConfig",
     "LLMS",
     "create_llm",
-    "PairAttackerHFLLM",
-    "PairAttackerHFLLMConfig",
 ]

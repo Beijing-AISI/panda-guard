@@ -16,6 +16,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from jailbreakpipe.llms.llm_registry import register_llm
 from jailbreakpipe.llms import BaseLLM, BaseLLMConfig, LLMGenerateConfig
+from jailbreakpipe.utils import process_end_eos
 
 
 @dataclass
@@ -27,9 +28,10 @@ class HuggingFaceLLMConfig(BaseLLMConfig):
     :param model_name: Name of the model or model instance.  模型的名称或模型实例
     :param device_map: Device mapping for model deployment.  用于模型部署的设备对应表
     """
+
     llm_type: str = field(default="HuggingFaceLLM")
     model_name: [str, Any] = field(default=None)
-    device_map: str = field(default='auto')
+    device_map: str = field(default="auto")
 
 
 @register_llm
@@ -41,13 +43,15 @@ class HuggingFaceLLM(BaseLLM):
     """
 
     def __init__(
-            self,
-            config: HuggingFaceLLMConfig,
+        self,
+        config: HuggingFaceLLMConfig,
     ):
         super().__init__(config)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self._NAME, token=os.getenv("HF_TOKEN"))  # , local_files_only=True
-        self.tokenizer.padding_side = 'left'
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self._NAME, token=os.getenv("HF_TOKEN")
+        )  # , local_files_only=True
+        self.tokenizer.padding_side = "left"
 
         if isinstance(config.model_name, str):
             self.model = AutoModelForCausalLM.from_pretrained(
@@ -61,18 +65,18 @@ class HuggingFaceLLM(BaseLLM):
         elif isinstance(config.model_name, AutoModelForCausalLM):
             self.model = config.model_name
         else:
-            raise ValueError(f"model_name should be either str or AutoModelForCausalLM, got {type(config.model_name)}")
+            raise ValueError(
+                f"model_name should be either str or AutoModelForCausalLM, got {type(config.model_name)}"
+            )
 
-        if 'llama' in self._NAME.lower():
+        if "llama" in self._NAME.lower():
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def generate(
-            self,
-            messages: List[Dict[str, str]],
-            config: LLMGenerateConfig
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ) -> Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]]]:
         """
         Generate a response for a given input using Hugging Face model.
@@ -82,10 +86,13 @@ class HuggingFaceLLM(BaseLLM):
         :return: Generated response or response with logprobs.  返回生成的应答或启用logprobs的应答
         """
         # Prepare the prompt
-        prompt_formatted = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        prompt_formatted = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
 
         inputs = self.tokenizer(
-            prompt_formatted, return_tensors='pt',
+            prompt_formatted,
+            return_tensors="pt",
             padding=True,
             truncation=True,
             max_length=config.max_n_tokens,
@@ -99,21 +106,19 @@ class HuggingFaceLLM(BaseLLM):
             do_sample=(config.temperature > 0),
             return_dict_in_generate=True,
             output_scores=True,
-            pad_token_id=self.tokenizer.eos_token_id
+            pad_token_id=self.tokenizer.eos_token_id,
         )
 
         # Extract the generated tokens (excluding the input prompt)
-        outputs_truncated = outputs.sequences[0][len(inputs['input_ids'][0]):]
+        outputs_truncated = outputs.sequences[0][len(inputs["input_ids"][0]) :]
         response = self.tokenizer.decode(outputs_truncated, skip_special_tokens=True)
 
         # Add the generated response to the message list
-        messages.append(
-            {"role": "assistant", "content": response}
-        )
+        messages.append({"role": "assistant", "content": response})
 
         # Update internal states (optional, depends on your implementation)
         self.update(
-            len(inputs['input_ids'][0]),
+            len(inputs["input_ids"][0]),
             len(outputs_truncated),
             1,
         )
@@ -132,9 +137,9 @@ class HuggingFaceLLM(BaseLLM):
         return messages
 
     def batch_generate(
-            self,
-            batch_messages: List[List[Dict[str, str]]],
-            config: LLMGenerateConfig,
+        self,
+        batch_messages: List[List[Dict[str, str]]],
+        config: LLMGenerateConfig,
     ) -> List[List[Dict[str, str]]]:
         """
         Generate responses for a batch of messages in a single call.
@@ -147,10 +152,16 @@ class HuggingFaceLLM(BaseLLM):
             return []
 
         # Format prompts for the entire batch
-        batch_prompts = [self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-                         for messages in batch_messages]
+        batch_prompts = [
+            self.tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            for messages in batch_messages
+        ]
         # Tokenize the batch of prompts
-        inputs = self.tokenizer(batch_prompts, return_tensors='pt', padding=True, truncation=True).to(self.model.device)
+        inputs = self.tokenizer(
+            batch_prompts, return_tensors="pt", padding=True, truncation=True
+        ).to(self.model.device)
 
         # Use model's generate method to handle batch generation
         outputs = self.model.generate(
@@ -160,22 +171,91 @@ class HuggingFaceLLM(BaseLLM):
             do_sample=(config.temperature > 0),
             return_dict_in_generate=True,
             output_scores=config.logprobs,
-            pad_token_id=self.tokenizer.eos_token_id
+            pad_token_id=self.tokenizer.eos_token_id,
         )
 
         # Decode the outputs and create the response format
         generated_responses = []
         for i, output in enumerate(outputs.sequences):
-            response_text = self.tokenizer.decode(output[len(inputs['input_ids'][i]):], skip_special_tokens=True)
+            response_text = self.tokenizer.decode(
+                output[len(inputs["input_ids"][i]) :], skip_special_tokens=True
+            )
             batch_messages[i].append({"role": "assistant", "content": response_text})
             generated_responses.append(batch_messages[i])
 
         return generated_responses
 
+    def continual_generate(
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+    ):
+        """
+        Remove EOS token in formatted prompt. Manually add generation prompt.
+
+        :param messages: List of messages for input.  输入的消息列表
+        :param config: Configuration for generation.  生成配置
+        :return: Generated response or responses with log probabilities.  返回生成的应答或启用百分比的应答
+        """
+
+        # Prepare the prompt, set continual_final_message=True. add_generation_prompt=False
+        prompt_formatted = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, continue_final_message=True
+        )
+
+        eos_token = self.tokenizer.eos_token
+
+        # remove eos for formatted prompt
+        prompt_formatted = process_end_eos(msg=prompt_formatted, eos_token=eos_token)
+
+        inputs = self.tokenizer(
+            prompt_formatted,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=config.max_n_tokens,
+        ).to(self.model.device)
+
+        # Generate the output
+        outputs = self.model.generate(
+            **inputs,
+            max_new_tokens=config.max_n_tokens,
+            temperature=config.temperature,
+            do_sample=(config.temperature > 0),
+            return_dict_in_generate=True,
+            output_scores=True,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
+
+        # Extract the generated tokens (excluding the input prompt)
+        outputs_truncated = outputs.sequences[0][len(inputs["input_ids"][0]) :]
+        generated_content = self.tokenizer.decode(
+            outputs_truncated, skip_special_tokens=True
+        )
+
+        # attach generated content to the end of value of key "content"
+        messages[-1]["content"] += generated_content
+
+        # Update internal states (optional, depends on your implementation)
+        self.update(
+            len(inputs["input_ids"][0]),
+            len(outputs_truncated),
+            1,
+        )
+
+        # Convert scores to logprobs if requested
+        if config.logprobs:
+            logprobs = []
+            for token_id, score in zip(outputs_truncated, outputs.scores):
+                # Apply log_softmax to the scores to get log-probabilities
+                log_prob = torch.log_softmax(score, dim=-1)
+                # Get the log-probability of the generated token
+                logprobs.append(float(log_prob[0, token_id]))
+
+            return messages, logprobs
+
+        return messages
+
     def evaluate_log_likelihood(
-            self,
-            messages: List[Dict[str, str]],
-            config: LLMGenerateConfig
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ) -> List[float]:
         """
         Evaluate the log likelihood of the given messages.
@@ -185,20 +265,24 @@ class HuggingFaceLLM(BaseLLM):
         :return: List of log likelihood values.  返回的log likelihood值列表
         """
         # Prepare the full prompt with all messages
-        prompt_formatted = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
-        inputs = self.tokenizer(prompt_formatted, return_tensors='pt').to(self.model.device)
+        prompt_formatted = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=False
+        )
+        inputs = self.tokenizer(prompt_formatted, return_tensors="pt").to(
+            self.model.device
+        )
 
         # Prepare the prompt with the last message dropped (to isolate the log likelihood for the last message)
         prompt_formatted_dropped = self.tokenizer.apply_chat_template(
-            messages[:-1],
-            tokenize=False,
-            add_generation_prompt=True
+            messages[:-1], tokenize=False, add_generation_prompt=True
         )
-        inputs_dropped = self.tokenizer(prompt_formatted_dropped, return_tensors='pt').to(self.model.device)
+        inputs_dropped = self.tokenizer(
+            prompt_formatted_dropped, return_tensors="pt"
+        ).to(self.model.device)
 
         # Pass the full input through the model to get logits
         with torch.no_grad():
-            outputs = self.model(**inputs, labels=inputs['input_ids'])
+            outputs = self.model(**inputs, labels=inputs["input_ids"])
 
         # Extract log probabilities
         logits = outputs.logits
@@ -216,12 +300,9 @@ class HuggingFaceLLM(BaseLLM):
         return log_likelihoods
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     llm_gen_config = LLMGenerateConfig(
-        max_n_tokens=128,
-        temperature=1.,
-        logprobs=True,
-        seed=42
+        max_n_tokens=128, temperature=1.0, logprobs=True, seed=42
     )
 
     config = HuggingFaceLLMConfig(

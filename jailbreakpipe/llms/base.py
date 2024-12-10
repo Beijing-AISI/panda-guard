@@ -23,6 +23,7 @@ class LLMGenerateConfig:
     :param logprobs: Whether to return log probabilities.  是否返回logprobs
     :param seed: Seed for reproducibility.  用于可重复的种子
     """
+
     max_n_tokens: int = field(default=None)
     temperature: float = field(default=None)
     logprobs: bool = field(default=False)
@@ -37,6 +38,7 @@ class BaseLLMConfig(abc.ABC):
     :param llm_type: Type of the LLM.  LLM的类型
     :param model_name: Name of the model.  模型的名称
     """
+
     llm_type: str = field(default=None)
     model_name: str = field(default=None)
 
@@ -58,9 +60,7 @@ class BaseLLM(abc.ABC):
 
     @abc.abstractmethod
     def generate(
-            self,
-            messages: List[Dict[str, str]],
-            config: LLMGenerateConfig
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ) -> Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]]]:
         """
         Abstract method for generating response from LLM.
@@ -73,9 +73,7 @@ class BaseLLM(abc.ABC):
 
     @abc.abstractmethod
     def evaluate_log_likelihood(
-            self,
-            messages: List[Dict[str, str]],
-            config: LLMGenerateConfig
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ) -> List[float]:
         """
         Abstract method for evaluating log likelihood of messages.
@@ -86,10 +84,22 @@ class BaseLLM(abc.ABC):
         """
         pass
 
+    def continual_generate(
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+    ) -> Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]]]:
+        """
+        Remove EOS token in formatted prompt. Manually add generation prompt.
+
+        :param messages: List of messages for input.  输入的消息列表
+        :param config: Configuration for generation.  生成配置
+        :return: Generated response or responses with log probabilities.  返回生成的应答或启用百分比的应答
+        """
+        pass
+
     def batch_generate(
-            self,
-            batch_messages: List[List[Dict[str, str]]],
-            config: LLMGenerateConfig,
+        self,
+        batch_messages: List[List[Dict[str, str]]],
+        config: LLMGenerateConfig,
     ) -> List[Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]]]]:
         """
         Generate responses for a batch of messages concurrently.
@@ -109,7 +119,9 @@ class BaseLLM(abc.ABC):
                 executor.submit(self.generate, messages, config)
                 for config, messages in zip(configs, batch_messages)
             ]
-            results = [future.result() for future in concurrent.futures.as_completed(futures)]
+            results = [
+                future.result() for future in concurrent.futures.as_completed(futures)
+            ]
         return results
 
     def reset(self):
@@ -123,10 +135,10 @@ class BaseLLM(abc.ABC):
         self.num_requires = 0
 
     def update(
-            self,
-            prompt_tokens: int,
-            completion_tokens: int,
-            num_requires: int,
+        self,
+        prompt_tokens: int,
+        completion_tokens: int,
+        num_requires: int,
     ):
         """
         Update the token counts and number of requests.

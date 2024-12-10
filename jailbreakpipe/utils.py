@@ -181,3 +181,25 @@ def wait_for_gpu_memory(device: str, threshold: float = 0.8, check_interval: int
             f"Waiting for GPU {device} to have more than {threshold * 100}% free memory..."
         )
         time.sleep(check_interval)
+
+
+def process_end_eos(msg: str, eos_token: str):
+    """
+    Processes the end of a message by removing any trailing newline characters or EOS (End of Sequence) tokens.
+
+    This function ensures that the message doesn't end with unwanted newline or EOS tokens, which might
+    interfere with further processing or analysis.
+
+    :param msg: The input message string that needs to be processed. 需要处理的输入消息字符串
+    :type msg: str
+    :param eos_token: The EOS (End of Sequence) token to be removed, if it exists at the end of the message. EOS（序列结束）标记，如果存在于消息末尾，则将其删除
+    :type eos_token: str
+    :return: The processed message with trailing newline and EOS token removed, if any. 删除末尾的换行符和 EOS 标记后的处理消息，如果有的话
+    :rtype: str
+    """
+    if msg.endswith("\n"):
+        msg = msg[:-1]
+    if msg.endswith(eos_token):
+        msg = msg[: -len(eos_token)]
+
+    return msg

@@ -3,7 +3,7 @@ attacker_name: PAIR
 
 # attack llm configs
 attack_llm_config:
-  llm_type: PairAttackerHFLLM
+  llm_type: HuggingFaceLLM
   model_name: Qwen/Qwen2.5-7B-Instruct
   device_map: cuda:2
 attacker_llm_gen_config:
