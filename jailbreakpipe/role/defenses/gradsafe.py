@@ -41,6 +41,7 @@ class GradSafeDefenderConfig(BaseDefenderConfig):
     target_llm_gen_config: LLMGenerateConfig = field(default=None)
     unsafe_set: List[str] = field(default_factory=get_default_unsafe_set)
     safe_set: List[str] = field(default_factory=get_default_safe_set)
+    unsafe_threshold: float = field(default=0.8)
 
 
 @register_defender
@@ -54,13 +55,30 @@ class GradSafeDefender(BaseDefender):
 
         # find safe-critical parameters in target_llm
         self.gradient_norms_compare, self.minus_row_cos, self.minus_col_cos = (
-            self.find_critical_para()
+            self._find_critical_para()
         )
 
-    def get_target_llm_loss(message: List[Dict[str, str]]):
-        pass
+        self.unsafe_threshold = config.unsafe_threshold
 
-    def find_citical_para(self):
+    def response(self, unsafe_score: float, messgaes: List[Dict[str, str]]):
+        assert self.target_llm.model.training == False
+        if unsafe_score > self.unsafe_threshold:
+            messgaes.append(
+                {"role": "assistant", "content": "Sorry, I CANNOT assist with that."}
+            )
+        else:
+            messages = self.target_llm.generate(
+                messages=messgaes, config=self.target_llm_gen_config
+            )
+        return messgaes
+
+    def get_target_llm_loss(self, message: List[Dict[str, str]]):
+        NLL = -self.target_llm.evaluate_log_likelihood(
+            messages=message, config=self.target_llm_gen_config
+        )
+        return NLL
+
+    def _find_critical_para(self):
 
         # get unsafe/safe set
         unsafe_set, safe_set = self.unsafe_set, self.safe_set
@@ -251,4 +269,111 @@ class GradSafeDefender(BaseDefender):
 
     def defense(self, messages: List[Dict[str, str]]):
         assert is_user_turn(messages=messages)
-        pass
+
+        # columns = df[["user_input", "toxicity"]]
+        model, tokenizer = self.target_llm.model, self.target_llm.tokenizer
+        assert model.training == True
+
+        #  Prompt templates
+        # sep_token, sep_token_id = tokenizer.unk_token, tokenizer.unk_token_id
+        # prompt = (
+        #     f"<s>[INST] <<SYS>> {{system_prompt}} <</SYS>> {{content}} [/INST]"
+        #     + f"{{sep_token}} {{summary}} {{eos_token}}"
+        # )
+
+        # def apply_prompt_template(sample):
+        #     txt = prompt.format(
+        #         system_prompt="You are a helpful assistant. Help me with the following query: ",
+        #         content=sample["source"],
+        #         summary=sample["target"],
+        #         eos_token=tokenizer.eos_token,
+        #         sep_token=sep_token,
+        #     )
+        #     return {
+        #         "text": txt,
+        #     }
+
+        #  Calculate cosine similarity based score
+        # cos_all = []
+        # label_all = []
+
+        # Gradient for prompt paired with complaince response Sure
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        # basic_sample = {}
+        # basic_sample["source"] = messages[-1]["content"]
+        # basic_sample["target"] = "Sure"
+        basic_sample = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. Help me with the following query: ",
+            },
+            {"role": "user", "content": messages[-1]["content"]},
+            {"role": "assistant", "content": "Sure"},
+        ]
+        # d = apply_prompt_template(basic_sample)
+        # input_ids = tokenizer(d["text"]).input_ids
+        # sep = input_ids.index(sep_token_id)
+
+        # input_ids = input_ids[:sep] + input_ids[sep + 1 :]
+        # input_ids = torch.tensor(np.array([input_ids]))
+        # target_ids = input_ids.clone()
+        # target_ids[:, :sep] = -100
+        optimizer.zero_grad()
+        # outputs = model(input_ids, labels=target_ids)
+        # neg_log_likelihood = outputs.loss
+        # neg_log_likelihood.backward()
+        neg_log_likelihood = self.get_target_llm_loss(basic_sample)
+        neg_log_likelihood.backward()
+
+        # Cosine similarities for safety-critical parameters
+        cos = []
+        import torch.nn.functional as F
+
+        for name, param in model.named_parameters():
+            if param.grad is not None and ("mlp" in name or "self" in name):
+                grad_norm = param.grad.to(self.gradient_norms_compare[name].device)
+                row_cos = torch.nan_to_num(
+                    F.cosine_similarity(
+                        grad_norm, (self.gradient_norms_compare[name]), dim=1
+                    )
+                )
+                col_cos = torch.nan_to_num(
+                    F.cosine_similarity(
+                        grad_norm, (self.gradient_norms_compare[name]), dim=0
+                    )
+                )
+                ref_row = self.minus_row_cos[name]
+                ref_col = self.minus_col_cos[name]
+                cos.extend(row_cos[ref_row > 1].cpu().tolist())
+                cos.extend(col_cos[ref_col > 1].cpu().tolist())
+
+        unsafe_score = sum(cos) / len(cos)
+        return self.response(unsafe_score, messages)
+
+        # cos_all.append(cos)
+
+        # For GradSafe-Zero, average all cosine similarites as one score
+        # cos_all = [sum(feature) / len(feature) for feature in cos_all]
+
+        # Calculate AUPRC
+        # precision, recall, thresholds = precision_recall_curve(label_all, cos_all)
+        # auprc = auc(recall, precision)
+
+        # Calculate Precision, Recall, F1
+        # from sklearn.metrics import precision_score, recall_score, f1_score
+
+        # true_labels = label_all
+
+        # predicted_labels = [1 if feature >= 0.25 else 0 for feature in cos_all]
+        # precision = precision_score(true_labels, predicted_labels)
+        # recall = recall_score(true_labels, predicted_labels)
+
+        # f1 = f1_score(true_labels, predicted_labels)
+        # print("Precision:", precision)
+        # print("Recall:", recall)
+        # print("F1 Score:", f1)
+        # print("AUPRC:", auprc)
+        # del gradient_norms_compare
+        # del cos_all
+        # del label_all
+        # return auprc, f1

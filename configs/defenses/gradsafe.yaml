@@ -1,0 +1,20 @@
+defender_cls: GradSafeDefender
+defender_name: GradSafe
+
+# target LLM
+target_llm_config: 
+  llm_type: HuggingFaceLLM
+  model_name: Qwen/Qwen2-7B-Instruct
+  device_map: cuda:3 
+target_llm_gen_config:
+  max_n_tokens: 128
+  temperature: 1.0
+  logprobs: false
+  seed: 42
+
+# determine is safe or not
+unsafe_threshold: 0.8
+
+# default settings
+# unsafe_set: 
+# safe_set: 
