@@ -108,8 +108,9 @@ class OpenAiChatLLM(BaseLLM):
     def continual_generate(
         self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ):
-        raise NotImplementedError("OpenAiChatLLM does not support continual generation, please use OpenAiLLM instead.")
-
+        raise NotImplementedError(
+            "OpenAiChatLLM does not support continual generation, please use OpenAiLLM instead."
+        )
 
     def evaluate_log_likelihood(
         self, messages: List[Dict[str, str]], config: LLMGenerateConfig
@@ -251,7 +252,10 @@ class OpenAiLLM(BaseLLM):
         return messages
 
     def evaluate_log_likelihood(
-        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+        self,
+        messages: List[Dict[str, str]],
+        config: LLMGenerateConfig,
+        require_grad=False,
     ) -> List[float]:
         """
         Evaluate the log likelihood of the given messages.
@@ -260,6 +264,11 @@ class OpenAiLLM(BaseLLM):
         :param config: Configuration for LLM generation.  生成配置
         :return: List of log likelihood values.  返回的log likelihood值列表
         """
+
+        # if require grad, model is training mode
+        if require_grad:
+            raise NotImplementedError
+
         prompt = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )

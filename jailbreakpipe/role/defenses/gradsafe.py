@@ -42,6 +42,7 @@ class GradSafeDefenderConfig(BaseDefenderConfig):
     unsafe_set: List[str] = field(default_factory=get_default_unsafe_set)
     safe_set: List[str] = field(default_factory=get_default_safe_set)
     unsafe_threshold: float = field(default=0.8)
+    verbose: bool = field(default=True)
 
 
 @register_defender
@@ -59,8 +60,10 @@ class GradSafeDefender(BaseDefender):
         )
 
         self.unsafe_threshold = config.unsafe_threshold
+        self.verbose = config.verbose
 
     def response(self, unsafe_score: float, messgaes: List[Dict[str, str]]):
+        self.target_llm.model.eval()
         assert self.target_llm.model.training == False
         if unsafe_score > self.unsafe_threshold:
             messgaes.append(
@@ -73,9 +76,11 @@ class GradSafeDefender(BaseDefender):
         return messgaes
 
     def get_target_llm_loss(self, message: List[Dict[str, str]]):
-        NLL = -self.target_llm.evaluate_log_likelihood(
-            messages=message, config=self.target_llm_gen_config
+        # TODO: need log likelihood with grad!
+        LL = self.target_llm.evaluate_log_likelihood(
+            messages=message, config=self.target_llm_gen_config, require_grad=True
         )
+        NLL = -sum(LL) / len(LL)
         return NLL
 
     def _find_critical_para(self):
@@ -85,6 +90,7 @@ class GradSafeDefender(BaseDefender):
 
         # model and tokenizer of target_llm
         model, tokenizer = self.target_llm.model, self.target_llm.tokenizer
+        model.train()
         assert model.training == True
 
         #  Prompt templates
@@ -183,6 +189,9 @@ class GradSafeDefender(BaseDefender):
             for name, param in model.named_parameters():
                 if param.grad is not None and ("mlp" in name or "self" in name):
                     grad_norm = param.grad.to(gradient_norms_compare[name].device)
+                    # print(f"grad norm: {grad_norm.shape}")
+                    # print(f"name:{name}")
+                    # print(f"grad_compare: {gradient_norms_compare[name].shape}")
                     row_cos = torch.nan_to_num(
                         F.cosine_similarity(
                             grad_norm, (gradient_norms_compare[name]), dim=1
@@ -267,11 +276,28 @@ class GradSafeDefender(BaseDefender):
             minus_col_cos[name] = col_coss[name] - safe_col_coss[name]
         return gradient_norms_compare, minus_row_cos, minus_col_cos
 
+    def log(self, tag: str, msg):
+        """
+        Log detailed information during the attack process.
+
+        :param tag: The label for the log message. 日志消息的标签
+        :type tag: str
+        :param msg: The log message. 日志消息内容
+        :type msg: str
+        """
+        if self.verbose:
+            print("#" * 20)
+            print(tag)
+            print("#" * 20)
+            print(msg)
+            print()
+
     def defense(self, messages: List[Dict[str, str]]):
         assert is_user_turn(messages=messages)
 
         # columns = df[["user_input", "toxicity"]]
         model, tokenizer = self.target_llm.model, self.target_llm.tokenizer
+        model.train()
         assert model.training == True
 
         #  Prompt templates
@@ -348,6 +374,7 @@ class GradSafeDefender(BaseDefender):
                 cos.extend(col_cos[ref_col > 1].cpu().tolist())
 
         unsafe_score = sum(cos) / len(cos)
+        self.log(tag="unsafe_score", msg=unsafe_score)
         return self.response(unsafe_score, messages)
 
         # cos_all.append(cos)

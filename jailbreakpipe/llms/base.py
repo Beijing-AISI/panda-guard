@@ -73,13 +73,17 @@ class BaseLLM(abc.ABC):
 
     @abc.abstractmethod
     def evaluate_log_likelihood(
-        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+        self,
+        messages: List[Dict[str, str]],
+        config: LLMGenerateConfig,
+        require_grad=False,
     ) -> List[float]:
         """
         Abstract method for evaluating log likelihood of messages.
 
         :param messages: List of messages to evaluate.  需要评估的消息列表
         :param config: Configuration for generation.  生成配置
+        :param require_grad: Determine whether returned logprobs has grad
         :return: List of log likelihoods.  返回的百分比列表
         """
         pass

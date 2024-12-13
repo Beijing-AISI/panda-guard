@@ -7,14 +7,38 @@
 # File      : __init__.py.py
 # explain   :
 
-from jailbreakpipe.role.defenses.base import BaseDefender, BaseDefenderConfig, REJECT_RESPONSE
-from jailbreakpipe.role.defenses.rewrite import SelfReminderDefender, SelfReminderDefenderConfig, NoneDefender, NoneDefenderConfig
+from jailbreakpipe.role.defenses.base import (
+    BaseDefender,
+    BaseDefenderConfig,
+    REJECT_RESPONSE,
+)
+from jailbreakpipe.role.defenses.rewrite import (
+    SelfReminderDefender,
+    SelfReminderDefenderConfig,
+    NoneDefender,
+    NoneDefenderConfig,
+)
 from jailbreakpipe.role.defenses.icl import IclDefender, IclDefenderConfig
-from jailbreakpipe.role.defenses.smoothllm import SmoothLLMDefender, SmoothLLMDefenderConfig
-from jailbreakpipe.role.defenses.semantic_smoothllm import SemanticSmoothLLMDefender, SemanticSmoothLLMDefenderConfig
-from jailbreakpipe.role.defenses.paraphrase import ParaphraseDefender, ParaphraseDefenderConfig
-from jailbreakpipe.role.defenses.back_translate import BackTranslationDefender, BackTranslationDefenderConfig
-from jailbreakpipe.role.defenses.perplexity_filter import PerplexityFilterDefender, PerplexityFilterDefenderConfig
+from jailbreakpipe.role.defenses.smoothllm import (
+    SmoothLLMDefender,
+    SmoothLLMDefenderConfig,
+)
+from jailbreakpipe.role.defenses.semantic_smoothllm import (
+    SemanticSmoothLLMDefender,
+    SemanticSmoothLLMDefenderConfig,
+)
+from jailbreakpipe.role.defenses.paraphrase import (
+    ParaphraseDefender,
+    ParaphraseDefenderConfig,
+)
+from jailbreakpipe.role.defenses.back_translate import (
+    BackTranslationDefender,
+    BackTranslationDefenderConfig,
+)
+from jailbreakpipe.role.defenses.perplexity_filter import (
+    PerplexityFilterDefender,
+    PerplexityFilterDefenderConfig,
+)
 
 from jailbreakpipe.role.defenses.repe import RepeDefender, RepeDefenderConfig
 
@@ -22,7 +46,13 @@ from jailbreakpipe.role.defenses.defender_registry import create_defender
 
 
 from jailbreakpipe.role.defenses.repe_utils import repe_pipeline_registry
+
 repe_pipeline_registry()
+
+from jailbreakpipe.role.defenses.gradsafe import (
+    GradSafeDefender,
+    GradSafeDefenderConfig,
+)
 
 
 __all__ = [
@@ -48,4 +78,6 @@ __all__ = [
     "RepeDefender",
     "RepeDefenderConfig",
     "create_defender",
+    "GradSafeDefender",
+    "GradSafeDefenderConfig",
 ]

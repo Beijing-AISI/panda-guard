@@ -1,0 +1,21 @@
+attacker:
+  attacker_cls: TransferAttacker
+  attacker_name: PAIR
+defender:
+  defender_cls: GradSafeDefender
+  defender_name: GradSafe
+  target_llm_config:
+    device_map: cuda:3
+    llm_type: HuggingFaceLLM
+    model_name: meta-llama/Llama-3.2-3B-Instruct
+  target_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 150
+    seed: null
+    temperature: 1.0
+  unsafe_threshold: 0.25
+judges: null
+misc:
+  input_file: ../../data/jbb_expanded.csv
+  output_file: null
+  threads: 1

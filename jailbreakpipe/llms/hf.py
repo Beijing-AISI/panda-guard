@@ -255,15 +255,24 @@ class HuggingFaceLLM(BaseLLM):
         return messages
 
     def evaluate_log_likelihood(
-        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
-    ) -> List[float]:
+        self,
+        messages: List[Dict[str, str]],
+        config: LLMGenerateConfig,
+        require_grad=False,
+    ) -> Union[List[float], List[torch.Tensor]]:
         """
         Evaluate the log likelihood of the given messages.
 
         :param messages: List of messages for evaluation.  需要评估的消息列表
         :param config: Configuration for LLM generation.  生成配置
+        :param require_grad: logprobs have grad
         :return: List of log likelihood values.  返回的log likelihood值列表
         """
+
+        # if require grad, the model is traininig mode
+        if require_grad:
+            assert self.model.training == True
+
         # Prepare the full prompt with all messages
         prompt_formatted = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=False
@@ -281,8 +290,11 @@ class HuggingFaceLLM(BaseLLM):
         ).to(self.model.device)
 
         # Pass the full input through the model to get logits
-        with torch.no_grad():
+        if require_grad:
             outputs = self.model(**inputs, labels=inputs["input_ids"])
+        else:
+            with torch.no_grad():
+                outputs = self.model(**inputs, labels=inputs["input_ids"])
 
         # Extract log probabilities
         logits = outputs.logits
@@ -290,10 +302,17 @@ class HuggingFaceLLM(BaseLLM):
 
         # Compute log likelihoods for each token in the last message
         log_likelihoods = []
-        for i in range(len(inputs_dropped.input_ids[0]), len(inputs.input_ids[0])):
-            token_id = inputs.input_ids[0, i]
-            log_likelihood = log_probs[0, i - 1, token_id].item()
-            log_likelihoods.append(log_likelihood)
+        if require_grad:
+            for i in range(len(inputs_dropped.input_ids[0]), len(inputs.input_ids[0])):
+                token_id = inputs.input_ids[0, i]
+                # remove item(), which has no grad
+                log_likelihood = log_probs[0, i - 1, token_id]
+                log_likelihoods.append(log_likelihood)
+        else:
+            for i in range(len(inputs_dropped.input_ids[0]), len(inputs.input_ids[0])):
+                token_id = inputs.input_ids[0, i]
+                log_likelihood = log_probs[0, i - 1, token_id].item()
+                log_likelihoods.append(log_likelihood)
 
         self.update(len(inputs.input_ids[0]), 0, 1)
 
