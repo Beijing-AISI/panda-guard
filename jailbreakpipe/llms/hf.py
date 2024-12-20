@@ -195,7 +195,6 @@ class HuggingFaceLLM(BaseLLM):
             add_generation_prompt=True
         )
         inputs_dropped = self.tokenizer(prompt_formatted_dropped, return_tensors='pt').to(self.model.device)
-
         # Pass the full input through the model to get logits
         with torch.no_grad():
             outputs = self.model(**inputs, labels=inputs['input_ids'])

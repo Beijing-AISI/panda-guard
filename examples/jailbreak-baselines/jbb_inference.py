@@ -152,7 +152,7 @@ def run_inference(args):
             attacker_config=attacker_config,
             defender_config=defender_config
         ),
-        verbose=False
+        verbose=True
     )
 
     # Run inference for each row.
