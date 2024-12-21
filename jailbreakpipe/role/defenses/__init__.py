@@ -54,6 +54,11 @@ from jailbreakpipe.role.defenses.gradsafe import (
     GradSafeDefenderConfig,
 )
 
+from jailbreakpipe.role.defenses.self_defense import (
+    SelfDefenseDefender,
+    SelfDefenseDefenderConfig,
+)
+
 
 __all__ = [
     "BaseDefender",
@@ -80,4 +85,6 @@ __all__ = [
     "create_defender",
     "GradSafeDefender",
     "GradSafeDefenderConfig",
+    "SelfDefenseDefender",
+    "SelfDefenseDefenderConfig",
 ]
