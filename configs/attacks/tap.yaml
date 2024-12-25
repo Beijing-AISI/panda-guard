@@ -3,9 +3,9 @@ attacker_cls: TAPAttacker
 attacker_name: TAP
 
 target_str: Sure.
-width: 10
-branching_factor: 10
-depth: 10
+width: 3
+branching_factor: 3
+depth: 2
 
 target_llm_config:
   llm_type: HuggingFaceLLM

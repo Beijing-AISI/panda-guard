@@ -181,7 +181,7 @@ class LMMJudge(BaseJudge):
 
 
 @register_judge
-class TAPLMMJudge(BaseJudge):
+class TAPLLMJudge(BaseJudge):
     """
     TAP LLM Judge
     """

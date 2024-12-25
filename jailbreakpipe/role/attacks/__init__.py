@@ -13,6 +13,7 @@ from jailbreakpipe.role.attacks.rewrite import RewriteAttacker, RewriteAttackerC
 from jailbreakpipe.role.attacks.pair import PairAttacker, PairAttackerConfig
 from jailbreakpipe.role.attacks.attacker_registry import create_attacker, ATTACKERS
 from jailbreakpipe.role.attacks.gcg import GCGAttacker, GCGAttackerConfig
+from jailbreakpipe.role.attacks.tap import TAPAttacker, TAPAttackerConfig
 
 print(PairAttacker.__class__)
 
@@ -28,4 +29,6 @@ __all__ = [
     "GCGAttacker",
     "GCGAttackerConfig",
     "create_attacker",
+    "TAPAttacker",
+    "TAPAttackerConfig",
 ]

@@ -92,14 +92,19 @@ class TAPAttacker(BaseAttacker):
     def __init__(self, config: TAPAttackerConfig):
         super().__init__(config)
 
-        self.targer_str = config.target_str
+        self.target_str = config.target_str
         self.width = config.width
         self.branching_factor = config.branching_factor
         self.depth = config.depth
 
         self.attack_llm = create_llm(config=config.attack_llm_config)
         self.target_llm = create_llm(config=config.target_llm_config)
-        self.tap_judge = create_judge(config=config.tap_judge_config)
+
+        judge_config_dict = config.tap_judge_config
+        judge_config_class = load_class(judge_config_dict.get("judge_cls"))
+        judge_config = parse_nested_config(judge_config_class, judge_config_dict)
+        self.tap_judge = create_judge(config=judge_config)
+
         self.target_llm_gen_config = config.target_llm_gen_config
         self.attack_llm_gen_config = config.attack_llm_gen_config
 
@@ -241,22 +246,29 @@ class TAPAttacker(BaseAttacker):
             judge_scores = get_first_k(judge_scores)
 
         if target_responses is not None:
-            target_response_list = get_first_k(target_responses)
+            target_responses = get_first_k(target_responses)
 
+        # print(
+        #     len(on_topic_scores),
+        #     len(adv_prompts),
+        #     len(improvs),
+        #     len(convs),
+        #     len(extracted_attacks),
+        # )
         on_topic_scores = get_first_k(on_topic_scores)
-        adv_prompt_list = get_first_k(adv_prompts)
-        improv_list = get_first_k(improvs)
-        convs_list = get_first_k(convs)
-        extracted_attack_list = get_first_k(extracted_attacks)
+        adv_prompts = get_first_k(adv_prompts)
+        improvs = get_first_k(improvs)
+        convs = get_first_k(convs)
+        extracted_attacks = get_first_k(extracted_attacks)
 
         return (
             on_topic_scores,
             judge_scores,
-            adv_prompt_list,
-            improv_list,
-            convs_list,
-            target_response_list,
-            extracted_attack_list,
+            adv_prompts,
+            improvs,
+            convs,
+            target_responses,
+            extracted_attacks,
         )
 
     @staticmethod
@@ -297,7 +309,7 @@ class TAPAttacker(BaseAttacker):
         # Initialize conversations
         # batchsize = args.n_streams
 
-        init_msg = self.get_init_msg(goal=goal, target_str=target_str)
+        init_msg = self.get_init_msg(goal=goal, target=target_str)
         processed_responses = [init_msg]
 
         # processed_response_list = [init_msg for _ in range(batchsize)]
@@ -310,6 +322,7 @@ class TAPAttacker(BaseAttacker):
         #     conv.set_system_message(system_prompt)
 
         convs = [[{"role": "system", "content": system_prompt}]]
+        best_attack_prompt = None
 
         # Begin TAP
 
@@ -349,6 +362,8 @@ class TAPAttacker(BaseAttacker):
             # extracted_attack_list, convs_list = clean_attacks_and_convs(
             #     extracted_attack_list, convs_list
             # )
+
+            convs = copy.deepcopy(convs_new)
 
             adv_prompts = [attack["prompt"] for attack in extracted_attacks]
             improvs = [attack["improvement"] for attack in extracted_attacks]
@@ -446,6 +461,7 @@ class TAPAttacker(BaseAttacker):
             #     # Note that this does not delete the conv.role (i.e., the system prompt)
             #     conv.messages = conv.messages[-2 * (args.keep_last_n) :]
 
+            best_attack_prompt = adv_prompts[0]
             # Early stopping criterion
             if any([score == 10 for score in judge_scores]):
                 print("Found a jailbreak. Exiting.")
@@ -462,5 +478,7 @@ class TAPAttacker(BaseAttacker):
                 )
                 for target_response, score in zip(target_responses, judge_scores)
             ]
+
+        return [{"role": "user", "content": best_attack_prompt}]
 
         # logger.finish()
