@@ -8,6 +8,7 @@ from jailbreakpipe.llms import HuggingFaceLLM, HuggingFaceLLMConfig
 from jailbreakpipe.utils import *
 import json
 import copy
+import numpy as np
 
 
 def attacker_system_prompt():
@@ -79,6 +80,7 @@ class TAPAttackerConfig(BaseAttackerConfig):
     target_llm_config: BaseLLMConfig = field(default_factory=BaseLLMConfig)
     target_llm_gen_config: LLMGenerateConfig = field(default_factory=LLMGenerateConfig)
     attack_llm_config: BaseLLMConfig = field(default_factory=BaseLLMConfig)
+    attack_llm_gen_config: LLMGenerateConfig = field(default_factory=LLMGenerateConfig)
 
     tap_judge_config: BaseJudgeConfig = field(default_factory=TAPLLMJudgeConfig)
 
@@ -99,6 +101,7 @@ class TAPAttacker(BaseAttacker):
         self.target_llm = create_llm(config=config.target_llm_config)
         self.tap_judge = create_judge(config=config.tap_judge_config)
         self.target_llm_gen_config = config.target_llm_gen_config
+        self.attack_llm_gen_config = config.attack_llm_gen_config
 
         self.attacker_sys_prompt = config.attacker_sys_prompt
 
@@ -147,7 +150,8 @@ class TAPAttacker(BaseAttacker):
             conv = self.attack_llm.continual_generate(
                 messages=conv, config=self.attack_llm_gen_config
             )
-            attack_prompts.append(conv[-1])
+            attack_content = conv[-1]["content"]
+            attack_prompts.append(json.loads(attack_content))
 
         return attack_prompts
 
@@ -182,14 +186,14 @@ class TAPAttacker(BaseAttacker):
 
     def prune(
         self,
-        on_topic_scores=None,
-        judge_scores=None,
-        adv_prompts=None,
-        improvs=None,
-        convs=None,
-        target_responses=None,
+        on_topic_scores: List[int] = None,
+        judge_scores: List[int] = None,
+        adv_prompts: List[str] = None,
+        improvs: List[str] = None,
+        convs: List[List[Dict[str, str]]] = None,
+        target_responses: List[str] = None,
         extracted_attacks=None,
-        sorting_score=None,
+        sorting_score: List[int] = None,
         attack_params=None,
     ):
         """
@@ -204,7 +208,56 @@ class TAPAttacker(BaseAttacker):
         In Phase 1 of pruning, `sorting_score` is a list of `on-topic` values.
         In Phase 2 of pruning, `sorting_score` is a list of `judge` values.
         """
-        raise NotImplementedError
+        # Shuffle the brances and sort them according to judge scores
+        shuffled_scores = enumerate(sorting_score)
+        shuffled_scores = [(s, i) for (i, s) in shuffled_scores]
+        # Ensures that elements with the same score are randomly permuted
+        np.random.shuffle(shuffled_scores)
+        shuffled_scores.sort(reverse=True)
+
+        def get_first_k(list_):
+            width = min(attack_params["width"], len(list_))
+
+            truncated_list = [
+                list_[shuffled_scores[i][1]]
+                for i in range(width)
+                if shuffled_scores[i][0] > 0
+            ]
+
+            # Ensure that the truncated list has at least two elements
+            if len(truncated_list) == 0:
+                truncated_list = [
+                    list_[shuffled_scores[0][0]],
+                    list_[shuffled_scores[0][1]],
+                ]
+
+            return truncated_list
+
+        # Prune the brances to keep
+        # 1) the first attack_params['width']-parameters
+        # 2) only attacks whose score is positive
+
+        if judge_scores is not None:
+            judge_scores = get_first_k(judge_scores)
+
+        if target_responses is not None:
+            target_response_list = get_first_k(target_responses)
+
+        on_topic_scores = get_first_k(on_topic_scores)
+        adv_prompt_list = get_first_k(adv_prompts)
+        improv_list = get_first_k(improvs)
+        convs_list = get_first_k(convs)
+        extracted_attack_list = get_first_k(extracted_attacks)
+
+        return (
+            on_topic_scores,
+            judge_scores,
+            adv_prompt_list,
+            improv_list,
+            convs_list,
+            target_response_list,
+            extracted_attack_list,
+        )
 
     @staticmethod
     def process_target_response(target_response, score, goal, target_str):
