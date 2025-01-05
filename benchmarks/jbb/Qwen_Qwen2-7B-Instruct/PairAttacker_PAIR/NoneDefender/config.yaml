@@ -1,0 +1,51 @@
+attacker:
+  attack_llm_config:
+    device_map: cuda:2
+    llm_type: HuggingFaceLLM
+    model_name: Qwen/Qwen2.5-7B-Instruct
+  attacker_cls: PairAttacker
+  attacker_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 100000
+    seed: 12
+    temperature: 1.0
+  attacker_name: PAIR
+  early_stop_threshold: 8
+  n_iterations: 6
+  pair_judge:
+    judge_cls: PairLLMJudge
+    judge_llm_config:
+      device_map: cuda:4
+      llm_type: HuggingFaceLLM
+      model_name: Qwen/Qwen2-7B-Instruct
+    judge_llm_gen_config:
+      logprobs: false
+      max_n_tokens: 100000
+      seed: 42
+      temperature: 1.0
+    judge_name: PAIR
+  target_llm_config:
+    device_map: cuda:3
+    llm_type: HuggingFaceLLM
+    model_name: Qwen/Qwen2-7B-Instruct
+  target_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 100000
+    seed: 42
+    temperature: 1.0
+  target_str: Sure,
+defender:
+  defender_cls: NoneDefender
+  target_llm_config:
+    llm_type: HuggingFaceLLM
+    model_name: Qwen/Qwen2-7B-Instruct
+  target_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 150
+    seed: null
+    temperature: 1.0
+judges: null
+misc:
+  input_file: ../../data/jbb_expanded.csv
+  output_file: null
+  threads: 1

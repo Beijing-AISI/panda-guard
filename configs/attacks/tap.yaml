@@ -1,0 +1,47 @@
+
+attacker_cls: TAPAttacker
+attacker_name: TAP
+
+target_str: Sure.
+width: 3
+branching_factor: 3
+depth: 2
+
+target_llm_config:
+  llm_type: HuggingFaceLLM
+  model_name: Qwen/Qwen2-7B-Instruct
+  device_map: cuda:3 
+target_llm_gen_config: 
+  max_n_tokens: 100_000
+  temperature: 1.0
+  logprobs: false
+  seed: 42
+attack_llm_config:
+  llm_type: HuggingFaceLLM
+  model_name: Qwen/Qwen2.5-7B-Instruct
+  device_map: cuda:2
+attack_llm_gen_config:
+  max_n_tokens: 100_000
+  temperature: 1.0
+  logprobs: false
+  seed: 12
+
+tap_judge_config:
+  judge_cls: TAPLLMJudge
+  judge_name: TAPJudge
+  judge_llm_config: 
+    llm_type: HuggingFaceLLM
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    device_map: cuda:2
+  judge_llm_gen_config: 
+    max_n_tokens: 100_000
+    temperature: 1.0
+    logprobs: false
+    seed: 12
+
+  # system_template_score: 
+  # system_template_topic: 
+  # user_template_score:     
+  # user_template_topic:
+
+# attacker_sys_prompt:
