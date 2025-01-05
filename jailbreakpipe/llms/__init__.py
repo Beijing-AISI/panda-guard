@@ -8,7 +8,12 @@
 # explain   :
 
 from jailbreakpipe.llms.base import BaseLLM, BaseLLMConfig, LLMGenerateConfig
-from jailbreakpipe.llms.oai import OpenAiChatLLM, OpenAiLLM, OpenAiLLMConfig, OpenAiChatLLMConfig
+from jailbreakpipe.llms.oai import (
+    OpenAiChatLLM,
+    OpenAiLLM,
+    OpenAiLLMConfig,
+    OpenAiChatLLMConfig,
+)
 from jailbreakpipe.llms.hf import HuggingFaceLLM, HuggingFaceLLMConfig
 from jailbreakpipe.llms.llm_registry import LLMS, create_llm
 

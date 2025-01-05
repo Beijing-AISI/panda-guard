@@ -11,3 +11,7 @@ chat.ipynb
 .idea
 examples/check_results.py
 results/
+.vscode
+cmd_jbb.sh
+/test.py
+.DS_Store
