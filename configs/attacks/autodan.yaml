@@ -1,0 +1,31 @@
+attacker_cls: "AutoDanAttacker"
+attacker_name: "AutoDan"
+
+target_llm_config:
+  llm_type: "HuggingFaceLLM"
+  model_name: "meta-llama/Llama-3.2-1B-Instruct"
+  device_map: "cuda:4"
+target_llm_gen_config:
+  max_n_tokens: 150
+  temperature: 1.0
+  logprobs: False
+  seed: null
+
+adv_prompts_size: 256
+batch_size: 32
+num_points: 5
+num_steps: 250
+iter: 5
+
+num_elites: 0.1
+crossover: 0.5
+mutation: 0.01
+
+allow_non_ascii: False
+llm_mutation: False
+
+init_adv_prompts_path: "../../jailbreakpipe/role/attacks/autodan/prompt_group.yaml"
+
+#mutation_llm_gen_config:
+#mutation_llm_config:
+
