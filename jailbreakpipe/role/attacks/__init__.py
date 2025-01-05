@@ -14,7 +14,7 @@ from jailbreakpipe.role.attacks.pair import PairAttacker, PairAttackerConfig
 from jailbreakpipe.role.attacks.attacker_registry import create_attacker, ATTACKERS
 from jailbreakpipe.role.attacks.gcg import GCGAttacker, GCGAttackerConfig
 from jailbreakpipe.role.attacks.tap import TAPAttacker, TAPAttackerConfig
-
+from jailbreakpipe.role.attacks.art_prompt import ArtPromptAttacker, ArtPromptAttackerConfig
 print(PairAttacker.__class__)
 
 __all__ = [
@@ -31,4 +31,6 @@ __all__ = [
     "create_attacker",
     "TAPAttacker",
     "TAPAttackerConfig",
+    "ArtPromptAttacker",
+    "ArtPromptAttackerConfig",
 ]
