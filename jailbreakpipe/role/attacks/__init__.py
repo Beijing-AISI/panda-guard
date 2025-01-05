@@ -10,6 +10,8 @@
 from jailbreakpipe.role.attacks.base import BaseAttacker, BaseAttackerConfig
 from jailbreakpipe.role.attacks.transfer import TransferAttacker, TransferAttackerConfig
 from jailbreakpipe.role.attacks.rewrite import RewriteAttacker, RewriteAttackerConfig
+from jailbreakpipe.role.attacks.art_prompt import ArtPromptAttacker, ArtPromptAttackerConfig
+from jailbreakpipe.role.attacks.advprompter import AdvprompterAttacker,AdvprompterAttackerConfig
 from jailbreakpipe.role.attacks.attacker_registry import create_attacker, ATTACKERS
 
 __all__ = [
@@ -19,5 +21,9 @@ __all__ = [
     "TransferAttackerConfig",
     "RewriteAttacker",
     "RewriteAttackerConfig",
+    "ArtPromptAttacker",
+    "ArtPromptAttackerConfig",
+    "AdvprompterAttacker",
+    "AdvprompterAttackerConfig",
     "create_attacker",
 ]
