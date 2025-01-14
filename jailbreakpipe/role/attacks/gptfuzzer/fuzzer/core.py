@@ -14,11 +14,10 @@ if TYPE_CHECKING:
 BASE_DIR = os.path.dirname(__file__)
 PARENT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
 sys.path.append(PARENT_DIR)
-from gptfuzzer.llm import LLM, LocalLLM
 from gptfuzzer.utils.template import synthesis_message
 from gptfuzzer.utils.predict import Predictor
 import warnings
-from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig
+from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig, BaseLLM
 
 
 class PromptNode:
@@ -71,7 +70,7 @@ class GPTFuzzer:
     def __init__(
         self,
         question: "str",
-        target: "LLM",
+        target: "BaseLLM",
         predictor: "Predictor",
         initial_seed: "list[str]",
         mutate_policy: "MutatePolicy",
@@ -86,7 +85,7 @@ class GPTFuzzer:
     ):
 
         self.question: "str" = question
-        self.target: LLM = target
+        self.target: BaseLLM = target
         self.predictor = predictor
         self.prompt_nodes: "list[PromptNode]" = [
             PromptNode(self, prompt) for prompt in initial_seed

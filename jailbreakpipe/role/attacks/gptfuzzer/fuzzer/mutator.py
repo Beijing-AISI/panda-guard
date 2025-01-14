@@ -1,9 +1,7 @@
 import random
 from .core import GPTFuzzer, PromptNode
-from gptfuzzer.utils.openai import openai_request
 from gptfuzzer.utils.template import QUESTION_PLACEHOLDER
-from gptfuzzer.llm import OpenAILLM, LLM
-from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig
+from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig, BaseLLM
 
 class Mutator:
     def __init__(self, fuzzer: 'GPTFuzzer'):
@@ -28,7 +26,7 @@ class Mutator:
 
 class OpenAIMutatorBase(Mutator):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: 'BaseLLM',
                  llm_gen_config: 'LLMGenerateConfig',
                  fuzzer: 'GPTFuzzer' = None):
         super().__init__(fuzzer)
@@ -46,7 +44,7 @@ class OpenAIMutatorBase(Mutator):
 
 class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: 'BaseLLM',
                  fuzzer: 'GPTFuzzer' = None):
         super().__init__(model, fuzzer)
 
@@ -68,7 +66,7 @@ class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
 
 class OpenAIMutatorCrossOver(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: 'BaseLLM',
                  fuzzer: 'GPTFuzzer' = None):
         super().__init__(model, fuzzer)
 
@@ -91,7 +89,7 @@ class OpenAIMutatorCrossOver(OpenAIMutatorBase):
 
 class OpenAIMutatorExpand(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: 'BaseLLM',
                  fuzzer: 'GPTFuzzer' = None):
         super().__init__(model, fuzzer)
 
@@ -118,7 +116,7 @@ class OpenAIMutatorExpand(OpenAIMutatorBase):
 
 class OpenAIMutatorShorten(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: 'BaseLLM',
                  fuzzer: 'GPTFuzzer' = None):
         super().__init__(model, fuzzer)
 
@@ -140,7 +138,7 @@ class OpenAIMutatorShorten(OpenAIMutatorBase):
 
 class OpenAIMutatorRephrase(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: 'BaseLLM',
                  fuzzer: 'GPTFuzzer' = None):
         super().__init__(model, fuzzer)
 

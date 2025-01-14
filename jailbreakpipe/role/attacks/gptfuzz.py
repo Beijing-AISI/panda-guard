@@ -25,7 +25,6 @@ from .gptfuzzer.fuzzer.mutator import (
     OpenAIMutatorShorten,
 )
 from .gptfuzzer.fuzzer import GPTFuzzer
-from .gptfuzzer.llm import OpenAILLM, LocalVLLM, LocalLLM, PaLM2LLM, ClaudeLLM
 from .gptfuzzer.utils.predict import RoBERTaPredictor
 
 
