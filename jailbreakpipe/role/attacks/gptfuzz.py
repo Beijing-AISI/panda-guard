@@ -31,9 +31,9 @@ from .gptfuzzer.utils.predict import RoBERTaPredictor
 @dataclass
 class GPTFuzzAttackerConfig(BaseAttackerConfig):
     """
-    Configuration for the Transfer Attacker.
+    Configuration for the GPTFuzz Attacker.
 
-    :param attacker_cls: Class of the attacker, default is "TransferAttacker".  攻击者的类型，默认值为 "TransferAttacker"
+    :param attacker_cls: Class of the attacker, default is "TransferAttacker".  攻击者的类型，默认值为 "GPTFuzzAttacker"
     :param attacker_name: Name of the attacker.  攻击者的名称
     :param attacker_llm_config: Configuration of attacker llm. 攻击时使用的llm配置
     :param attacker_llm_gen_config: Generation configuration for the attacker's LLM. 攻击者 LLM 的生成配置
@@ -56,7 +56,7 @@ class GPTFuzzAttackerConfig(BaseAttackerConfig):
 @register_attacker
 class GPTFuzzAttacker(BaseAttacker):
     """
-    Transfer Attacker Implementation that substitutes the user message with a pre-formulated attack prompt.
+    GPTFuzz Attacker Implementation that substitutes the user message with a pre-formulated attack prompt.
 
     :param config: Configuration for the GPTFuzzAttacker.  用于GPTFuzzAttacker的配置
     """
