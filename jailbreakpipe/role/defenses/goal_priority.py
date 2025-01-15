@@ -38,20 +38,34 @@ class GoalPriorityDefender(BaseDefender):
                     attack_prompt=attack_prompt, defense_type=self.defense_type
                 ),
             },
-            {"role": "assistant", "content": "[Internal thoughts]"},
+            # {"role": "assistant", "content": "[Internal thoughts] "},
         ]
 
-        raw_msg = self.target_llm.continual_generate(
+        # defense_msg_2 = [{"role": "user", "content": "hello"}]
+
+        # print(f"defense_msg\n{defense_msg[0]['content']}\n")
+
+        raw_msg = self.target_llm.generate(
             messages=defense_msg, config=self.target_llm_gen_config
         )
+        # print("raw_msg")
+        # print(raw_msg)
+
         target_llm_response = raw_msg[-1]["content"]
-        response = re.search(r"\[Final response\](.*)", target_llm_response)
+
+        # print(f"Tgt response\n{target_llm_response}\n")
+
+        if self.defense_type in ["priority", "priority_llama"]:
+            response = re.search(r"\[Final response\](.*)", target_llm_response)
+        else:
+            response = target_llm_response
+
         return [
             {"role": "user", "content": attack_prompt},
             {"role": "assistant", "content": response},
         ]
 
-    def add_defense(attack_prompt, defense_type="priority"):
+    def add_defense(self, attack_prompt, defense_type="priority"):
 
         # w/o training setting: plug-and-play goal prioritization prompt work for ChatGPT, GPT-4 and vicuna
         if defense_type == "priority":

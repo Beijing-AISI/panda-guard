@@ -59,6 +59,11 @@ from jailbreakpipe.role.defenses.self_defense import (
     SelfDefenseDefenderConfig,
 )
 
+from jailbreakpipe.role.defenses.goal_priority import (
+    GoalPriorityDefender,
+    GoalPriorityDefenderConfig,
+)
+
 
 __all__ = [
     "BaseDefender",
@@ -87,4 +92,6 @@ __all__ = [
     "GradSafeDefenderConfig",
     "SelfDefenseDefender",
     "SelfDefenseDefenderConfig",
+    "GoalPriorityDefender",
+    "GoalPriorityDefenderConfig",
 ]

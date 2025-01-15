@@ -1,0 +1,21 @@
+attacker:
+  attacker_cls: TransferAttacker
+  attacker_name: PAIR
+defender:
+  defender_cls: GoalPriorityDefender
+  defender_name: GoalPriority
+  defense_type: selfremind
+  target_llm_config:
+    device_map: cuda:0
+    llm_type: HuggingFaceLLM
+    model_name: Qwen/Qwen2.5-7B-Instruct
+  target_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 150
+    seed: null
+    temperature: 1.0
+judges: null
+misc:
+  input_file: ../../data/jbb_expanded.csv
+  output_file: null
+  threads: 1
