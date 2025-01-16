@@ -19,6 +19,7 @@ from jailbreakpipe.role.attacks.art_prompt import ArtPromptAttacker, ArtPromptAt
 from jailbreakpipe.role.attacks.autodan.autodan import AutoDanAttacker, AutoDanAttackerConfig
 from jailbreakpipe.role.attacks.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig
 from jailbreakpipe.role.attacks.cold import ColdAttacker, ColdAttackerConfig
+from jailbreakpipe.role.attacks.renellm import ReNeLLMAttacker, ReNeLLMAttackerConfig
 
 __all__ = [
     "BaseAttacker",
@@ -42,4 +43,6 @@ __all__ = [
     "GPTFuzzAttackerConfig",
     "ColdAttacker",
     "ColdAttackerConfig",
+    "ReNeLLMAttacker",
+    "ReNeLLMAttackerConfig"
 ]
