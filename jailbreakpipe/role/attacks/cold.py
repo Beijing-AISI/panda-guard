@@ -22,8 +22,6 @@ import argparse
 import random
 import sys
 
-sys.path.insert(0, './GPT2ForwardBackward')
-
 from nltk.corpus import stopwords
 from .cold_attack.util import *
 from .cold_attack.bleuloss import batch_log_bleulosscnn_ae
