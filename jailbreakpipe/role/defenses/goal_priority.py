@@ -13,6 +13,16 @@ from jailbreakpipe.utils import load_class, parse_nested_config
 
 @dataclass
 class GoalPriorityDefenderConfig(BaseDefenderConfig):
+    """
+    Goal Priority Defender Configuration.
+
+    :param defender_cls: Class name of the defender, default is "GoalPriorityDefender". 防御器的类名，默认值为 "GoalPriorityDefender"
+    :param defender_name: Name of the defender, default is "GoalPriority". 防御器的名称，默认值为 "GoalPriority"
+    :param target_llm_config: Configuration for the target LLM. 目标 LLM 的配置
+    :param target_llm_gen_config: Configuration for the LLM generation process. LLM 生成过程的配置
+    :param defense_type: Type of defense, default is "priority". 防御的类型，默认值为 "priority"
+    """
+
     defender_cls: str = field(default="GoalPriorityDefender")
     defender_name: str = field(default="GoalPriority")
     target_llm_config: BaseLLMConfig = field(default_factory=BaseLLMConfig)
@@ -23,11 +33,28 @@ class GoalPriorityDefenderConfig(BaseDefenderConfig):
 
 @register_defender
 class GoalPriorityDefender(BaseDefender):
+    """
+    Goal Priority Defender for handling attack prompts with goal prioritization.
+
+    :param config: Configuration object that defines the defender's behavior. 配置对象，定义防御器的行为
+    """
+
     def __init__(self, config: GoalPriorityDefenderConfig):
+        """
+        Initialize the GoalPriorityDefender with a given configuration.
+
+        :param config: Configuration object for the defender. 防御器的配置对象
+        """
         super().__init__(config)
         self.defense_type = config.defense_type
 
     def defense(self, messages=List[Dict[str, str]]):
+        """
+        Perform defense against an attack prompt by analyzing and responding based on goal prioritization.
+
+        :param messages: List of message dictionaries where each dictionary contains 'role' and 'content' keys. 消息字典的列表，每个字典包含 'role' 和 'content' 键
+        :return: List of message dictionaries with defense applied. 应用防御后的消息字典列表
+        """
         assert is_user_turn(messages=messages)
 
         attack_prompt = messages[-1]["content"]
@@ -66,6 +93,13 @@ class GoalPriorityDefender(BaseDefender):
         ]
 
     def add_defense(self, attack_prompt, defense_type="priority"):
+        """
+        Generate a defense message based on the attack prompt and the specified defense type.
+
+        :param attack_prompt: The attack prompt to defend against. 防御的攻击提示
+        :param defense_type: The type of defense to apply. 防御类型
+        :return: A string containing the defense prompt. 返回包含防御提示的字符串
+        """
 
         # w/o training setting: plug-and-play goal prioritization prompt work for ChatGPT, GPT-4 and vicuna
         if defense_type == "priority":
