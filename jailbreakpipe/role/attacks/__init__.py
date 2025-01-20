@@ -20,6 +20,7 @@ from jailbreakpipe.role.attacks.autodan.autodan import AutoDanAttacker, AutoDanA
 from jailbreakpipe.role.attacks.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig
 from jailbreakpipe.role.attacks.cold import ColdAttacker, ColdAttackerConfig
 from jailbreakpipe.role.attacks.renellm import ReNeLLMAttacker, ReNeLLMAttackerConfig
+from jailbreakpipe.role.attacks.random_search import RandomSearchAttacker, RandomSearchConfig
 
 __all__ = [
     "BaseAttacker",
@@ -44,5 +45,7 @@ __all__ = [
     "ColdAttacker",
     "ColdAttackerConfig",
     "ReNeLLMAttacker",
-    "ReNeLLMAttackerConfig"
+    "ReNeLLMAttackerConfig",
+    "RandomSearchAttacker",
+    "RandomSearchConfig",
 ]
