@@ -5,9 +5,6 @@ from stringprep import b1_set
 from typing import Dict, List, Any, Tuple, Union, Optional
 from dataclasses import dataclass, field
 
-from openai import max_retries
-from torch.cuda import max_memory_reserved
-
 from jailbreakpipe.role.attacks import BaseAttacker, BaseAttackerConfig
 from jailbreakpipe.role.attacks.attacker_registry import register_attacker
 from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig
