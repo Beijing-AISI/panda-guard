@@ -18,7 +18,7 @@ from jailbreakpipe.role.attacks.tap import TAPAttacker, TAPAttackerConfig
 from jailbreakpipe.role.attacks.art_prompt import ArtPromptAttacker, ArtPromptAttackerConfig
 from jailbreakpipe.role.attacks.autodan.autodan import AutoDanAttacker, AutoDanAttackerConfig
 from jailbreakpipe.role.attacks.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig
-from jailbreakpipe.role.attacks.random_search import RandomSearchAttacker, RandomSearchConfig
+from jailbreakpipe.role.attacks.random_search import RandomSearchAttacker, RandomSearchAttackerConfig
 
 
 __all__ = [
@@ -42,5 +42,5 @@ __all__ = [
     "GPTFuzzAttacker",
     "GPTFuzzAttackerConfig",
     "RandomSearchAttacker",
-    "RandomSearchConfig",
+    "RandomSearchAttackerConfig",
 ]
