@@ -33,9 +33,9 @@ class ArtPromptAttackerConfig(BaseAttackerConfig):
     :param rewrite_template: Template for LLM to mask offensive words
     """
 
-    attacker_cls: str = field(default="BaseAttacker")
+    attacker_cls: str = field(default="ArtPromptAttacker")
     attacker_name: str = field(default="ArtPrompt")
-    mask_llm_url: str = field(default="ArtPrompt")
+    mask_llm_url: str = field(default=None)
     llm_gen_config: LLMGenerateConfig = field(default=None)
     rewrite_template: str = field(default=None)
 

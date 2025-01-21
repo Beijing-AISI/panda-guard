@@ -1,0 +1,15 @@
+attacker_cls: "ColdAttacker"
+attacker_name: "COLD"
+
+# attacker llm configs
+white_box_llm_config:
+  llm_type: "HuggingFaceLLM"
+
+  # The original paper model is the following four: [meta-llama/Llama-2-7b-chat-hf, lmsys/vicuna-7b-v1.5, TheBloke/guanaco-7B-HF, mistralai/Mistral-7B-Instruct-v0.2]
+  model_name: "meta-llama/Llama-2-7b-chat-hf"
+
+white_box_llm_gen_config:
+  max_n_tokens: 10000
+  temperature: 1.0
+  logprobs: False
+  seed: null
