@@ -9,15 +9,17 @@ from jailbreakpipe.utils import *
 import json
 
 
+@dataclass
 class DeepInceptionAttackerConfig(BaseAttackerConfig):
     attacker_cls: str = field(default=None)
     attacker_name: str = field(default=None)
 
     scence: str = field(default="science fiction")
-    character_number: str = field(default="5")
-    layer_number: str = field(default="5")
+    character_number: int = field(default=5)
+    layer_number: int = field(default=5)
 
 
+@register_attacker
 class DeepInceptionAttacker(BaseAttacker):
     def __init__(self, config: DeepInceptionAttackerConfig):
         super().__init__(config)
