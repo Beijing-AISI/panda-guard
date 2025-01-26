@@ -15,10 +15,23 @@ from jailbreakpipe.role.attacks.attacker_registry import create_attacker, ATTACK
 from jailbreakpipe.role.attacks.gcg import GCGAttacker, GCGAttackerConfig
 from jailbreakpipe.role.attacks.tap import TAPAttacker, TAPAttackerConfig
 
-from jailbreakpipe.role.attacks.art_prompt import ArtPromptAttacker, ArtPromptAttackerConfig
-from jailbreakpipe.role.attacks.autodan.autodan import AutoDanAttacker, AutoDanAttackerConfig
+from jailbreakpipe.role.attacks.art_prompt import (
+    ArtPromptAttacker,
+    ArtPromptAttackerConfig,
+)
+from jailbreakpipe.role.attacks.autodan.autodan import (
+    AutoDanAttacker,
+    AutoDanAttackerConfig,
+)
 from jailbreakpipe.role.attacks.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig
-from jailbreakpipe.role.attacks.random_search import RandomSearchAttacker, RandomSearchAttackerConfig
+from jailbreakpipe.role.attacks.random_search import (
+    RandomSearchAttacker,
+    RandomSearchAttackerConfig,
+)
+from jailbreakpipe.role.attacks.deepinception import (
+    DeepInceptionAttacker,
+    DeepInceptionAttackerConfig,
+)
 
 
 __all__ = [
@@ -43,4 +56,6 @@ __all__ = [
     "GPTFuzzAttackerConfig",
     "RandomSearchAttacker",
     "RandomSearchAttackerConfig",
+    "DeepInceptionAttacker",
+    "DeepInceptionAttackerConfig",
 ]
