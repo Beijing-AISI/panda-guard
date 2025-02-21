@@ -1,8 +1,8 @@
-from typing import Dict, List, Any, Tuple, Union, Optional
+from typing import Dict, List
 from dataclasses import dataclass, field
 from jailbreakpipe.role.defenses import BaseDefender, BaseDefenderConfig
 from jailbreakpipe.role.defenses.defender_registry import register_defender
-from jailbreakpipe.llms import BaseLLM, BaseLLMConfig, LLMGenerateConfig
+from jailbreakpipe.llms import BaseLLMConfig, LLMGenerateConfig
 from jailbreakpipe.utils import is_user_turn
 import torch
 import torch.nn.functional as F
@@ -10,9 +10,9 @@ import torch.nn.functional as F
 
 def get_default_unsafe_set():
     """
-    获取默认的危险内容集合 / Get the default set of unsafe content.
+    Get the default set of unsafe content.
 
-    :return: 默认的危险内容列表 / A list of default unsafe content.
+    :return: A list of default unsafe content.
     :rtype: list
     """
     unsafe_set = [
@@ -24,9 +24,9 @@ def get_default_unsafe_set():
 
 def get_default_safe_set():
     """
-    获取默认的安全内容集合 / Get the default set of safe content.
+    Get the default set of safe content.
 
-    :return: 默认的安全内容列表 / A list of default safe content.
+    :return: A list of default safe content.
     :rtype: list
     """
     safe_set = [
@@ -39,10 +39,10 @@ def get_default_safe_set():
 @dataclass
 class GradSafeDefenderConfig(BaseDefenderConfig):
     """
-    基础防御者的配置类 / Configuration for the Base Defender.
+    Configuration for the Base Defender.
 
-    :param defender_cls: 防御者的类型 / Class of the defender.
-    :param defender_name: 防御者的名称 / Name of the defender.
+    :param defender_cls: Class of the defender.
+    :param defender_name: Name of the defender.
     :param target_llm_config: 目标LLM配置 / Configuration for the target language model.
     :param target_llm_gen_config: 目标LLM生成配置 / Configuration for generating output with the target LLM.
     """
@@ -60,15 +60,16 @@ class GradSafeDefenderConfig(BaseDefenderConfig):
 @register_defender
 class GradSafeDefender(BaseDefender):
     """
-    GradSafe 防御者类 / GradSafe Defender class.
-    通过梯度规范和余弦相似性来防止模型生成危险或不道德的内容 / Prevents the model from generating unsafe or unethical content using gradient norms and cosine similarity.
+    GradSafe Defender class.
+    Prevents the model from generating unsafe or unethical content using gradient norms and cosine similarity.
+    https://arxiv.org/abs/2402.13494
     """
 
     def __init__(self, config: GradSafeDefenderConfig):
         """
-        初始化GradSafeDefender / Initialize the GradSafeDefender.
+        Initialize the GradSafeDefender.
 
-        :param config: GradSafeDefender的配置对象 / Configuration object for GradSafeDefender.
+        :param config: Configuration object for GradSafeDefender.
         """
         super().__init__(config)  # target_llm and traget_llm_gen_config
 
@@ -85,11 +86,11 @@ class GradSafeDefender(BaseDefender):
 
     def response(self, unsafe_score: float, messgaes: List[Dict[str, str]]):
         """
-        根据不安全分数来决定是否返回安全回应 / Decide whether to return a safe response based on the unsafe score.
+        Decide whether to return a safe response based on the unsafe score.
 
-        :param unsafe_score: 不安全分数 / Unsafe score
-        :param messgaes: 传入的消息 / Input messages
-        :return: 安全或不安全的回应 / Safe or unsafe response
+        :param unsafe_score: Unsafe score
+        :param messgaes: Input messages
+        :return: Safe or unsafe response
         """
         self.target_llm.model.eval()
         assert self.target_llm.model.training == False
@@ -105,10 +106,10 @@ class GradSafeDefender(BaseDefender):
 
     def get_target_llm_loss(self, message: List[Dict[str, str]]):
         """
-        计算目标LLM的损失（对数似然）/ Calculate the loss (log likelihood) for the target LLM.
+        Calculate the loss (log likelihood) for the target LLM.
 
-        :param message: 输入消息 / Input messages
-        :return: 负对数似然损失 / Negative log likelihood loss
+        :param message: Input messages
+        :return: Negative log likelihood loss
         """
         LL = self.target_llm.evaluate_log_likelihood(
             messages=message, config=self.target_llm_gen_config, require_grad=True
@@ -118,9 +119,9 @@ class GradSafeDefender(BaseDefender):
 
     def _find_critical_para(self):
         """
-        查找模型中的关键参数 / Find critical parameters in the model.
+        Find critical parameters in the model.
 
-        :return: 梯度规范比较、行和列余弦相似度 / Gradient norms comparison, row and column cosine similarities
+        :return: Gradient norms comparison, row and column cosine similarities
         """
 
         # get unsafe/safe set
@@ -220,7 +221,6 @@ class GradSafeDefender(BaseDefender):
             ]
 
             optimizer.zero_grad()
-            # outputs = model(input_ids, labels=target_ids)
 
             # get target llm loss for last message
             neg_log_likelihood = self.get_target_llm_loss(basic_sample)
@@ -262,9 +262,9 @@ class GradSafeDefender(BaseDefender):
         """
         Log detailed information during the attack process.
 
-        :param tag: The label for the log message. 日志消息的标签
+        :param tag: The label for the log message.
         :type tag: str
-        :param msg: The log message. 日志消息内容
+        :param msg: The log message.
         :type msg: str
         """
         if self.verbose:
@@ -276,10 +276,10 @@ class GradSafeDefender(BaseDefender):
 
     def defense(self, messages: List[Dict[str, str]]):
         """
-        对模型输出进行防御，避免生成危险内容 / Defend the model's output to prevent unsafe content generation.
+        Defend the model's output to prevent unsafe content generation.
 
-        :param messages: 输入消息 / Input messages
-        :return: 防御后的消息 / Defended messages
+        :param messages: Input messages
+        :return: Defended messages
         """
         assert is_user_turn(messages=messages)
 
