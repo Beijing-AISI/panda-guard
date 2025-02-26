@@ -32,7 +32,14 @@ from jailbreakpipe.role.attacks.deepinception import (
     DeepInceptionAttacker,
     DeepInceptionAttackerConfig,
 )
-
+from jailbreakpipe.role.attacks.gpt4_cipher import (
+    GPT4CipherAttacker,
+    GPT4CipherAttackerConfig
+)
+from jailbreakpipe.role.attacks.scav import (
+    ScavAttacker,
+    ScavAttackerConfig,
+)
 
 __all__ = [
     "BaseAttacker",
@@ -58,4 +65,8 @@ __all__ = [
     "RandomSearchAttackerConfig",
     "DeepInceptionAttacker",
     "DeepInceptionAttackerConfig",
+    "GPT4CipherAttacker",
+    "GPT4CipherAttackerConfig",
+    "ScavAttacker",
+    "ScavAttackerConfig",
 ]
