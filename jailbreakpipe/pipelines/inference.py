@@ -13,8 +13,16 @@ from dataclasses import dataclass, field
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from jailbreakpipe.llms import BaseLLM, BaseLLMConfig
-from jailbreakpipe.role import create_attacker, create_defender, create_judge, BaseAttacker, BaseDefender, \
-    TransferAttacker, BaseJudgeConfig, BaseJudge
+from jailbreakpipe.role import (
+    create_attacker,
+    create_defender,
+    create_judge,
+    BaseAttacker,
+    BaseDefender,
+    TransferAttacker,
+    BaseJudgeConfig,
+    BaseJudge,
+)
 from jailbreakpipe.role import BaseAttackerConfig, BaseDefenderConfig
 
 
@@ -32,6 +40,7 @@ class InferPipelineConfig:
     :param judge_configs: List of configurations for any judges used in evaluating the effectiveness of the defense.
                           评估防御有效性的评审者配置列表。
     """
+
     attacker_config: BaseAttackerConfig = field(default=None)
     defender_config: BaseDefenderConfig = field(default=None)
     judge_configs: List[BaseJudgeConfig] = field(default_factory=list)
@@ -67,16 +76,14 @@ class InferPipeline:
                     是否启用详细日志记录，用于调试和透明化。
     """
 
-    def __init__(
-            self,
-            config: InferPipelineConfig,
-            verbose: bool = False
-    ):
+    def __init__(self, config: InferPipelineConfig, verbose: bool = False):
         # Create instances of the attacker, defender, and any judges based on the provided configurations.
         # 根据提供的配置创建攻击者、防御者和评审者的实例。
         self.attacker = create_attacker(config.attacker_config)
         self.defender = create_defender(config.defender_config)
-        self.judges = [create_judge(judge_config) for judge_config in config.judge_configs]
+        self.judges = [
+            create_judge(judge_config) for judge_config in config.judge_configs
+        ]
         # Register LLMs used by the attacker, defender, and judges.
         # 注册攻击者、防御者和评审者所使用的LLM。
         self.attack_llms = llm_register(self.attacker)
@@ -100,13 +107,17 @@ class InferPipeline:
         # Check if the attacker is a TransferAttacker and validate the required argument.
         # 检查攻击者是否为TransferAttacker，并验证所需参数。
         if isinstance(self.attacker, TransferAttacker):
-            assert "request_reformulated" in kwargs, "TransferAttacker requires a 'request_reformulated' parameter."
+            assert (
+                "request_reformulated" in kwargs
+            ), "TransferAttacker requires a 'request_reformulated' parameter."
 
         self.log(messages, "[INPUT]")
 
         # Perform the attack phase using the attacker instance.
         # 使用攻击者实例执行攻击阶段。
-        attack = self.attacker.attack(messages, request_reformulated=kwargs.get("request_reformulated", None))
+        attack = self.attacker.attack(
+            messages, request_reformulated=kwargs.get("request_reformulated", None)
+        )
         self.log(attack, "[ATTACK]")
 
         # Perform the defense phase using the defender instance.
@@ -118,12 +129,11 @@ class InferPipeline:
         # 计算攻击和防御阶段的Token使用量。
         usage = self.calc_tokens()
 
-        return {
-            "messages": defense,
-            "usage": usage
-        }
+        return {"messages": defense, "usage": usage}
 
-    def parallel_judging(self, defense: List[Dict[str, str]], request: str) -> Dict[str, Any]:
+    def parallel_judging(
+        self, defense: List[Dict[str, str]], request: str
+    ) -> Dict[str, Any]:
         """
         Perform parallel evaluation of the defense using multiple judges.
 
@@ -141,14 +151,17 @@ class InferPipeline:
         # Use ThreadPoolExecutor for parallel judge evaluations.
         # 使用ThreadPoolExecutor进行评审者的并行评估。
         with ThreadPoolExecutor() as executor:
-            future_to_judge = {executor.submit(judge.judge, defense, request): judge for judge in self.judges}
+            future_to_judge = {
+                executor.submit(judge.judge, defense, request): judge
+                for judge in self.judges
+            }
             for future in as_completed(future_to_judge):
                 judge = future_to_judge[future]
                 try:
                     result = future.result()
                     judge_results[judge._NAME] = result
                 except Exception as exc:
-                    print(f'Judge {judge._NAME} generated an exception: {exc}')
+                    print(f"Judge {judge._NAME} generated an exception: {exc}")
 
         return judge_results
 
@@ -164,16 +177,26 @@ class InferPipeline:
         # Calculate token usage for the attacker.
         # 计算攻击者的Token使用量。
         attacker_prompt_tokens = sum(llm.prompt_tokens for llm in self.attack_llms)
-        attacker_completion_tokens = sum(llm.completion_tokens for llm in self.attack_llms)
+        attacker_completion_tokens = sum(
+            llm.completion_tokens for llm in self.attack_llms
+        )
 
         # Calculate token usage for the defender.
         # 计算防御者的Token使用量。
         defender_prompt_tokens = sum(llm.prompt_tokens for llm in self.defense_llms)
-        defender_completion_tokens = sum(llm.completion_tokens for llm in self.defense_llms)
+        defender_completion_tokens = sum(
+            llm.completion_tokens for llm in self.defense_llms
+        )
 
         return {
-            "attacker": {"prompt_tokens": attacker_prompt_tokens, "completion_tokens": attacker_completion_tokens},
-            "defender": {"prompt_tokens": defender_prompt_tokens, "completion_tokens": defender_completion_tokens},
+            "attacker": {
+                "prompt_tokens": attacker_prompt_tokens,
+                "completion_tokens": attacker_completion_tokens,
+            },
+            "defender": {
+                "prompt_tokens": defender_prompt_tokens,
+                "completion_tokens": defender_completion_tokens,
+            },
         }
 
     def reset(self):

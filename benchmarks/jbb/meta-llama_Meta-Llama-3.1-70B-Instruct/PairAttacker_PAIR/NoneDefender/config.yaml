@@ -1,0 +1,52 @@
+attacker:
+  attack_llm_config:
+    device_map: cuda:0
+    llm_type: HuggingFaceLLM
+    model_name: meta-llama/Llama-3.1-8B-Instruct
+  attacker_cls: PairAttacker
+  attacker_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 100000
+    seed: 12
+    temperature: 1.0
+  attacker_name: PAIR
+  early_stop_threshold: 8
+  n_iterations: 6
+  pair_judge:
+    judge_cls: PairLLMJudge
+    judge_llm_config:
+      device_map: cuda:2
+      llm_type: HuggingFaceLLM
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+    judge_llm_gen_config:
+      logprobs: false
+      max_n_tokens: 100000
+      seed: 42
+      temperature: 1.0
+    judge_name: PAIR
+  target_llm_config:
+    device_map: cuda:1
+    llm_type: HuggingFaceLLM
+    model_name: meta-llama/Llama-3.1-8B-Instruct
+  target_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 100000
+    seed: 42
+    temperature: 1.0
+  target_str: Sure,
+defender:
+  defender_cls: NoneDefender
+  target_llm_config:
+    base_url: http://172.18.129.80:8000/v1
+    llm_type: OpenAiLLM
+    model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+  target_llm_gen_config:
+    logprobs: false
+    max_n_tokens: 150
+    seed: null
+    temperature: 1.0
+judges: null
+misc:
+  input_file: ../../data/jbb_expanded.csv
+  output_file: null
+  threads: 1

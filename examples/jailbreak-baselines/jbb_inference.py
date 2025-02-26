@@ -154,7 +154,11 @@ def run_inference(args):
 
     # Run inference for each row.
     df = df.head(args.max_queries) if args.max_queries else df
-    iterator = tqdm(df.iterrows(), total=len(df), desc=args.llm.split('/')[-1]) if args.visible else df.iterrows()
+    iterator = (
+        tqdm(df.iterrows(), total=len(df), desc=args.llm.split("/")[-1])
+        if args.visible
+        else df.iterrows()
+    )
     results = []
     for _, row in iterator:
         messages = [{"role": "user", "content": row["Goal"]}]

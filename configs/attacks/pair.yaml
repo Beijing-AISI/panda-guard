@@ -4,8 +4,9 @@ attacker_name: PAIR
 # attack llm configs
 attack_llm_config:
   llm_type: HuggingFaceLLM
-  model_name: Qwen/Qwen2.5-7B-Instruct
-  device_map: cuda:2
+  model_name: meta-llama/Llama-3.1-8B-Instruct
+  # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+  device_map: cuda:0
 attacker_llm_gen_config:
   max_n_tokens: 100_000
   temperature: 1.0
@@ -15,8 +16,9 @@ attacker_llm_gen_config:
 # target llm configs
 target_llm_config:
   llm_type: HuggingFaceLLM
-  model_name: Qwen/Qwen2-7B-Instruct
-  device_map: cuda:3 
+  model_name: meta-llama/Llama-3.1-8B-Instruct
+  # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+  device_map: cuda:1
 target_llm_gen_config:
   max_n_tokens: 100_000
   temperature: 1.0
@@ -29,8 +31,9 @@ pair_judge:
   judge_name: PAIR
   judge_llm_config:
     llm_type: HuggingFaceLLM
-    model_name: Qwen/Qwen2-7B-Instruct
-    device_map: cuda:4
+    model_name: meta-llama/Llama-3.1-8B-Instruct
+    # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+    device_map: cuda:2
   judge_llm_gen_config:
     max_n_tokens: 100_000
     temperature: 1.0
