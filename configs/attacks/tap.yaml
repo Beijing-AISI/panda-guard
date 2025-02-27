@@ -11,22 +11,22 @@ target_llm_config:
   llm_type: HuggingFaceLLM
   model_name: meta-llama/Llama-3.1-8B-Instruct
   # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-  device_map: cuda:3 
+  device_map: cuda:0 
 target_llm_gen_config: 
   max_n_tokens: 100_000
   temperature: 1.0
   logprobs: false
-  seed: 42
+  # seed: 42
 attack_llm_config:
   llm_type: HuggingFaceLLM
   model_name: meta-llama/Llama-3.1-8B-Instruct
   # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-  device_map: cuda:4
+  device_map: cuda:1
 attack_llm_gen_config:
   max_n_tokens: 1000_000_000
-  temperature: 1.0
+  temperature: 0.1
   logprobs: false
-  seed: 12
+  # seed: 12
 
 tap_judge_config:
   judge_cls: TAPLLMJudge
@@ -35,12 +35,12 @@ tap_judge_config:
     llm_type: HuggingFaceLLM
     model_name: meta-llama/Llama-3.1-8B-Instruct
     # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-    device_map: cuda:5
+    device_map: cuda:2
   judge_llm_gen_config: 
     max_n_tokens: 100_000
     temperature: 1.0
     logprobs: false
-    seed: 12
+    # seed: 12
 
   # system_template_score: 
   # system_template_topic: 

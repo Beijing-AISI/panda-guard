@@ -463,7 +463,7 @@ class TAPAttacker(BaseAttacker):
                 # not success, return
                 if not is_success:
                     self._log_failed_attack(goal=goal)
-                    return {"role": "user", "content": "[ATTACK FAILED]"}
+                    return [{"role": "user", "content": "[ATTACK FAILED]"}]
 
                 extracted_attacks.extend(extracted_attack)
                 convs_new.extend(convs_copy)

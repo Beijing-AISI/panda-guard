@@ -539,7 +539,7 @@ class PairAttacker(BaseAttacker):
             # jump from this goal
             if attempt == RETRY:
                 self._log_failed_attack(goal=goal)
-                return {"role": "user", "content": "[ATTACK FAILED]"}
+                return [{"role": "user", "content": "[ATTACK FAILED]"}]
 
             target_llm_conv = self._response(attack_prompt)
 
