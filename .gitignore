@@ -15,3 +15,4 @@ results/
 cmd_jbb.sh
 /test.py
 .DS_Store
+write_csv.py
