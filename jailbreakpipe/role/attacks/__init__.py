@@ -23,7 +23,11 @@ from jailbreakpipe.role.attacks.autodan.autodan import (
     AutoDanAttacker,
     AutoDanAttackerConfig,
 )
-from jailbreakpipe.role.attacks.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig
+from jailbreakpipe.role.attacks.gptfuzzer_attack.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig
+from jailbreakpipe.role.attacks.cold_attack.cold import ColdAttacker, ColdAttackerConfig
+from jailbreakpipe.role.attacks.renellm_attack.renellm import ReNeLLMAttacker, ReNeLLMAttackerConfig
+from jailbreakpipe.role.attacks.ica import IcaAttacker, IcaAttackerConfig
+
 from jailbreakpipe.role.attacks.random_search import (
     RandomSearchAttacker,
     RandomSearchAttackerConfig,
@@ -61,6 +65,12 @@ __all__ = [
     "AutoDanAttackerConfig",
     "GPTFuzzAttacker",
     "GPTFuzzAttackerConfig",
+    "ColdAttacker",
+    "ColdAttackerConfig",
+    "ReNeLLMAttacker",
+    "ReNeLLMAttackerConfig",
+    "IcaAttacker",
+    "IcaAttackerConfig",
     "RandomSearchAttacker",
     "RandomSearchAttackerConfig",
     "DeepInceptionAttacker",

@@ -15,8 +15,8 @@ import pandas as pd
 import os
 import sys
 
-from .gptfuzzer.fuzzer.selection import MCTSExploreSelectPolicy
-from .gptfuzzer.fuzzer.mutator import (
+from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.selection import MCTSExploreSelectPolicy
+from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.mutator import (
     MutateRandomSinglePolicy,
     OpenAIMutatorCrossOver,
     OpenAIMutatorExpand,
@@ -24,8 +24,8 @@ from .gptfuzzer.fuzzer.mutator import (
     OpenAIMutatorRephrase,
     OpenAIMutatorShorten,
 )
-from .gptfuzzer.fuzzer import GPTFuzzer
-from .gptfuzzer.utils.predict import RoBERTaPredictor
+from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.core import GPTFuzzer
+from jailbreakpipe.role.attacks.gptfuzzer_attack.utils.predict import RoBERTaPredictor
 
 
 @dataclass
@@ -57,6 +57,8 @@ class GPTFuzzAttackerConfig(BaseAttackerConfig):
 class GPTFuzzAttacker(BaseAttacker):
     """
     GPTFuzz Attacker Implementation that substitutes the user message with a pre-formulated attack prompt.
+
+    Reference: Yu J, Lin X, Yu Z, et al. Gptfuzzer: Red teaming large language models with auto-generated jailbreak prompts[J]. arXiv preprint arXiv:2309.10253, 2023.
 
     :param config: Configuration for the GPTFuzzAttacker.  用于GPTFuzzAttacker的配置
     """

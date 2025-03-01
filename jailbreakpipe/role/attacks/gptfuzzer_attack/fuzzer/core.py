@@ -6,16 +6,13 @@ import sys
 
 from typing import TYPE_CHECKING
 
+# Type annotation, which is not imported at runtime
 if TYPE_CHECKING:
-    from .mutator import Mutator, MutatePolicy
-    from .selection import SelectPolicy
+    from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.mutator import Mutator, MutatePolicy
+    from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.selection import SelectPolicy
 
-# Directory where the current script belongs
-BASE_DIR = os.path.dirname(__file__)
-PARENT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
-sys.path.append(PARENT_DIR)
-from gptfuzzer.utils.template import synthesis_message
-from gptfuzzer.utils.predict import Predictor
+from jailbreakpipe.role.attacks.gptfuzzer_attack.utils.template import synthesis_message
+from jailbreakpipe.role.attacks.gptfuzzer_attack.utils.predict import Predictor
 import warnings
 from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig, BaseLLM
 

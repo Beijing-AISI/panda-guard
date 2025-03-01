@@ -21,10 +21,10 @@ import argparse
 import random
 import logging
 
-from .renellm_attack.utils.data_utils import data_reader
-from .renellm_attack.utils.prompt_rewrite_utils import shortenSentence, misrewriteSentence, changeOrder, addChar, languageMix, styleChange
-from .renellm_attack.utils.scenario_nest_utils import SCENARIOS
-from .renellm_attack.utils.harmful_classification_utils import harmful_classification
+from jailbreakpipe.role.attacks.renellm_attack.utils.data_utils import data_reader
+from jailbreakpipe.role.attacks.renellm_attack.utils.prompt_rewrite_utils import shortenSentence, misrewriteSentence, changeOrder, addChar, languageMix, styleChange
+from jailbreakpipe.role.attacks.renellm_attack.utils.scenario_nest_utils import SCENARIOS
+from jailbreakpipe.role.attacks.renellm_attack.utils.harmful_classification_utils import harmful_classification
 
 
 def get_fixed_args():
@@ -39,7 +39,7 @@ class ReNeLLMAttackerConfig(BaseAttackerConfig):
     """
     Configuration for the ReNeLLM Attacker.
 
-    :param attacker_cls: Class of the attacker, default is "ColdAttacker".  攻击者的类型，默认值为 "ColdAttacker"
+    :param attacker_cls: Class of the attacker, default is "ReNeLLMAttacker".  攻击者的类型，默认值为 "ColdAttacker"
     :param attacker_name: Name of the attacker.  攻击者的名称
     :param rewrite_llm_config: Configuration of rewrite llm. 重写prompt时用到的LLM配置
     :param target_llm_config: Configuration of target llm. 被攻击的LLM配置
@@ -63,6 +63,7 @@ class ReNeLLMAttackerConfig(BaseAttackerConfig):
 class ReNeLLMAttacker(BaseAttacker):
     """
     ReNeLLM Attacker Implementation that substitutes the user message with a pre-formulated attack prompt.
+    Reference: Peng Ding and Jun Kuang and Dan Ma and Xuezhi Cao and Yunsen Xian and Jiajun Chen and Shujian Huang, 2024, A Wolf in Sheep’s Clothing: Generalized Nested Jailbreak Prompts can Fool Large Language Models Easily, NAACL, 2024
     """
 
     def __init__(self, config: ReNeLLMAttackerConfig):
@@ -78,8 +79,6 @@ class ReNeLLMAttacker(BaseAttacker):
 
     def attack(self, messages: List[Dict[str, str]], **kwargs) -> List[Dict[str, str]]:
         """
-        Execute an attack by transferring a reformulated request into the conversation.
-
         :param messages: List of messages in the conversation.  对话中的消息列表
         :param kwargs: Additional parameters for the attack, must include "request_reformulated".  额外攻击参数
         :return: Prompts containing harmful attacks on the target, is of the form “role: user, content: xx”. 含有目标的有害攻击的prompt, 是"role: user, content: xx的形式"
@@ -97,7 +96,7 @@ class ReNeLLMAttacker(BaseAttacker):
 
         nested_prompt = ""
 
-        # TODO @hexiang: 有可能会出现无限循环的情况，需要加入超时机制
+        # When jailbreak_label equals 1, or loop_count reaches the maximum number of attempts, self.args.iter_max, the loop ends
         while True:
             # 1. prompt rewriting
             while True:
@@ -119,7 +118,13 @@ class ReNeLLMAttacker(BaseAttacker):
                 logging.info("******* Check if the prompt has been modified to be harmless *******")
                 label = harmful_classification(self.judge_llm, self.config.judge_llm_gen_config, harm_behavior)
                 logging.info(f"\nThe label given by {self.config.judge_llm_config.model_name} is: {label}\n")
-                if label == "1":
+                # Some LLMs will output 0/1, followed by an explanation, here we just take the first position of str
+                try:
+                    value = int(label[0])
+                except ValueError:
+                    continue
+
+                if int(label[0]) == 1:
                     logging.info(f"******* Prompt Rewriting Done! *******\n")
                     break
                 else:
@@ -161,8 +166,20 @@ class ReNeLLMAttacker(BaseAttacker):
                     logging.info(
                         f"\n******* Exceeded the maximum number of iterations {self.args.iter_max}, adopt the current round results and end the loop.*******\n")
                     break
+            # Some LLMs will output 0/1, followed by an explanation, here we just take the first position of str
+            try:
+                value = int(jailbreak_label[0])
+            except ValueError:
+                if loop_count < self.args.iter_max:
+                    logging.info(f"\nJailbreaking Prompt Failed!\n")
+                    harm_behavior = temp_harm_behavior
+                    continue
+                else:
+                    logging.info(
+                        f"\n******* Exceeded the maximum number of iterations {args.iter_max}, adopt the current round results and end the loop.*******\n")
+                    break
 
-            if jailbreak_label == "1":
+            if int(jailbreak_label[0]) == 1:
                 logging.info(f"\n******* Jailbreaking Prompt Successful! *******\n")
                 break
             else:

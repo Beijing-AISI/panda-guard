@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-from gptfuzzer.fuzzer import GPTFuzzer, PromptNode
+from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.core import GPTFuzzer, PromptNode
 
 
 class SelectPolicy:
