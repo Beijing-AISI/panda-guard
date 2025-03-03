@@ -1,6 +1,6 @@
 import random
-from jailbreakpipe.role.attacks.gptfuzzer_attack.fuzzer.core import GPTFuzzer, PromptNode
-from jailbreakpipe.role.attacks.gptfuzzer_attack.utils.template import QUESTION_PLACEHOLDER
+from .core import GPTFuzzer, PromptNode
+from gptfuzzer.utils.template import QUESTION_PLACEHOLDER
 from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig, BaseLLM
 
 class Mutator:
