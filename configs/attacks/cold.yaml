@@ -2,14 +2,70 @@ attacker_cls: "ColdAttacker"
 attacker_name: "COLD"
 
 # attacker llm configs
+# The original paper model is the following four: [meta-llama/Llama-2-7b-chat-hf, lmsys/vicuna-7b-v1.5, TheBloke/guanaco-7B-HF, mistralai/Mistral-7B-Instruct-v0.2]
 white_box_llm_config:
-  llm_type: "HuggingFaceLLM"
+#  llm_type: "HuggingFaceLLM"
+#  model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+#  device_map: cuda:0
 
-  # The original paper model is the following four: [meta-llama/Llama-2-7b-chat-hf, lmsys/vicuna-7b-v1.5, TheBloke/guanaco-7B-HF, mistralai/Mistral-7B-Instruct-v0.2]
-  model_name: "meta-llama/Llama-2-7b-chat-hf"
+  llm_type: "HuggingFaceLLM"
+  model_name: "meta-llama/Meta-Llama-3.1-70B-Instruct"
 
 white_box_llm_gen_config:
   max_n_tokens: 10000
   temperature: 1.0
   logprobs: False
   seed: null
+
+# 原文中配置为: batch_size=8, length=20, max_length=20, num_iters=2000, goal_weight=100
+cold_config:
+  no_cuda: False
+  verbose: False
+  print_every: 2000,
+  pretrained_model: "llama2"
+  wandb: False
+  straight_through: True
+  topk: 10
+  rl_topk: 0
+  lexical: 'max'
+  lexical_variants: False
+  if_zx: False
+  fp16: True
+  version: ""
+  start: 0
+  end: 50
+  mode: 'suffix'
+  control_type: 'sentiment'
+  batch_size: 1
+  length: 100
+  max_length: 100
+  frozen_length: 0
+  goal_weight: 500
+  rej_weight: 100
+  abductive_filterx: False
+  lr_nll_portion: 1.0
+  prefix_length: 0
+  counterfactual_max_ngram: 3
+  no_loss_rerank: False
+  use_sysprompt: False
+  input_lgt_temp: 1.0
+  output_lgt_temp: 1.0
+  # temperature
+  rl_output_lgt_temp: 1.0
+  init_temp: 1
+  init_mode: 'original'
+  # lr
+  stepsize: 0.1
+  stepsize_ratio: 1
+  stepsize_iters: 1000
+  # iterations
+  num_iters: 1000
+  min_iters: 0
+  noise_iters: 1
+  win_anneal_iters: 1000
+  constraint_iters: 1000
+  # gaussian noise
+  gs_mean: 0.0
+  gs_std: 0.01
+  large_noise_iters: "50, 200, 500, 1500"
+  large_gs_std: "0.1, 0.05, 0.01, 0.001"

@@ -22,69 +22,12 @@ import random
 import sys
 
 from nltk.corpus import stopwords
-from .cold_attack.util import *
-from .cold_attack.bleuloss import batch_log_bleulosscnn_ae
-from .cold_attack.attack_suffix import attack_generation
+from transformers import AutoTokenizer
+from jailbreakpipe.role.attacks.cold_attack.util import *
+from jailbreakpipe.role.attacks.cold_attack.bleuloss import batch_log_bleulosscnn_ae
+from jailbreakpipe.role.attacks.cold_attack.attack_suffix import attack_generation
 
 stop_words = set(stopwords.words('english'))
-
-def get_fixed_args():
-    # 原文中配置为: batch_size=8, length=20, max_length=20, num_iters=2000, goal_weight=100
-    args = argparse.Namespace(
-        no_cuda=False,
-        verbose=False,
-        print_every=2000,
-        pretrained_model="llama2",
-        wandb=False,
-        straight_through=True,
-        topk=10,
-        rl_topk=0,
-        lexical='max',
-        lexical_variants=False,
-        if_zx=False,
-        fp16=True,
-        version="",
-        start=0,
-        end=50,
-        mode='suffix',
-        control_type='sentiment',
-        batch_size=1,
-        length=100,
-        max_length=100,
-        frozen_length=0,
-        goal_weight=500,
-        rej_weight=100,
-        abductive_filterx=False,
-        lr_nll_portion=1.0,
-        prefix_length=0,
-        counterfactual_max_ngram=3,
-        no_loss_rerank=False,
-        use_sysprompt=False,
-        input_lgt_temp=1.0,
-        output_lgt_temp=1.0,
-        # temperature
-        rl_output_lgt_temp=1.0,
-        init_temp=1,
-        init_mode='original',
-        # lr
-        stepsize=0.1,
-        stepsize_ratio=1,
-        stepsize_iters=1000,
-        # iterations
-        num_iters=1000,
-        min_iters=0,
-        noise_iters=1,
-        win_anneal_iters=1000,
-        constraint_iters=1000,
-        # gaussian noise
-        gs_mean=0.0,
-        gs_std=0.01,
-        large_noise_iters="50, 200, 500, 1500",
-        large_gs_std="0.1, 0.05, 0.01, 0.001",
-    )
-    return args
-
-
 
 @dataclass
 class ColdAttackerConfig(BaseAttackerConfig):
@@ -107,7 +50,7 @@ class ColdAttackerConfig(BaseAttackerConfig):
 class ColdAttacker(BaseAttacker):
     """
     Cold Attacker Implementation that substitutes the user message with a pre-formulated attack prompt.
-
+    Reference：Guo, Xingang and Yu, Fangxu and Zhang, Huan and Qin, Lianhui and Hu, Bin, 2024, Cold-attack: Jailbreaking llms with stealthiness and controllability, ICML 2024
     实现过程中不同的一些点：
     1. target 在框架中没有传入，简单使用'Sure, here is'
     2. 原文中需要使用GPT-4从多个sample中取出合适的一个. 为了不使用GPT-4. 我们将batch size设置为1, 只用第一个.
@@ -121,8 +64,7 @@ class ColdAttacker(BaseAttacker):
         self.config = config
 
         self.llm = create_llm(config=config.white_box_llm_config)
-        # TOOD: 这里的所有的config, 应该都写到BaseAttackerConfig中, 并能使用 .yaml 文件进行配置 / 读取. 
-        self.args = get_fixed_args()
+        self.args = config.cold_config
 
     def attack(self, messages: List[Dict[str, str]], **kwargs) -> List[Dict[str, str]]:
         """
@@ -136,6 +78,7 @@ class ColdAttacker(BaseAttacker):
         question = messages[0]["content"]
 
         device = "cuda" if torch.cuda.is_available() and not self.args.no_cuda else "cpu"
+
         # Load pretrained model
         model, tokenizer = self.llm.model, self.llm.tokenizer
 

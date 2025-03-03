@@ -1,0 +1,1 @@
+from jailbreakpipe.role.attacks.gptfuzzer_attack.gptfuzz import GPTFuzzAttacker, GPTFuzzAttackerConfig

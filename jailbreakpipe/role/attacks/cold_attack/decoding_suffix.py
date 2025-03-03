@@ -25,7 +25,7 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
     z: optimization target  (original ending in counterfactual task)
     constraints: (constraint set in lexical constrained task)
     '''
-    model.eval()
+    # model.eval()
     words = ['sorry', 'apologetic', 'regretful',
               'unethical', 'immoral', 'dishonest',
               'illegal', 'unlawful', 'illicit',
@@ -70,7 +70,7 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
     else:
         x_ = tokenizer.encode(x)[1:]
     x_t = torch.tensor(x_, device=device, dtype=torch.long)
-    x_onehot = one_hot(x_t, dimension=tokenizer.vocab_size)
+    x_onehot = one_hot(x_t, dimension=len(tokenizer.get_vocab()))
 
     # repeat batch_size times
     x_t = x_t.unsqueeze(0).repeat(args.batch_size, 1)
@@ -82,7 +82,7 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
     z_ = tokenizer.encode(z)[1:]  
     z_t = torch.tensor(z_, device=device, dtype=torch.long)
 
-    z_onehot = one_hot(z_t, dimension=tokenizer.vocab_size)
+    z_onehot = one_hot(z_t, dimension=len(tokenizer.get_vocab()))
     z_onehot = z_onehot.repeat(args.batch_size, 1, 1)
 
     z_t = z_t.unsqueeze(0).repeat(args.batch_size, 1)
@@ -102,7 +102,7 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
     z_nonstop_ = tokenizer.encode(z_nonstop_words)
     logging.info('|' + z_nonstop_words + '|')
 
-    z_mask = np.zeros([tokenizer.vocab_size])
+    z_mask = np.zeros([len(tokenizer.get_vocab())])
     z_mask[z_nonstop_] = 1.
     z_mask = torch.tensor(z_mask, device=device)
     z_mask = z_mask.unsqueeze(0).unsqueeze(0).repeat(args.batch_size, length, 1)
@@ -114,7 +114,7 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
         length = x_t.shape[1] - length
 
     x_words = tokenizer.encode(bad_words)
-    x_mask = np.zeros([tokenizer.vocab_size])
+    x_mask = np.zeros([len(tokenizer.get_vocab())])
     x_mask[x_words] = 1.
     x_mask = torch.tensor(x_mask, device=device)
 
@@ -122,10 +122,10 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
 
     bad_mask = torch.ones_like(bad_mask, device=device) - bad_mask
 
-    bad_words_ = tokenizer.encode(bad_words)[:]  # delete the "." token we appended before
+    bad_words_ = tokenizer.encode(bad_words)[1:]  # delete the "." token we appended before
     bad_words_t = torch.tensor(bad_words_, device=device, dtype=torch.long)
 
-    bad_words_onehot = one_hot(bad_words_t, dimension=tokenizer.vocab_size)
+    bad_words_onehot = one_hot(bad_words_t, dimension=len(tokenizer.get_vocab()))
     bad_words_onehot = bad_words_onehot.repeat(args.batch_size, 1, 1)
 
     bad_words_t = bad_words_t.unsqueeze(0).repeat(args.batch_size, 1)
@@ -141,7 +141,7 @@ def decode(model, tokenizer, device, x="", z="", constraints=None, args=None, sy
         if length > init_logits.shape[1]:
             init_logits = torch.cat(
                 [init_logits,
-                 torch.zeros([args.batch_size, length - init_logits.shape[1], tokenizer.vocab_size], device=device)],
+                 torch.zeros([args.batch_size, length - init_logits.shape[1], len(tokenizer.get_vocab())], device=device)],
                 dim=1)
     text, _, _ = get_text_from_logits(init_logits, tokenizer)
 
