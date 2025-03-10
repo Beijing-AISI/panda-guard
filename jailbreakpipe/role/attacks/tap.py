@@ -8,9 +8,10 @@ from jailbreakpipe.utils import *
 import json
 import copy
 import numpy as np
+import time
 
 
-RETRY = 10
+RETRY = 43200  # 12h
 
 
 def attacker_system_prompt():
@@ -231,6 +232,7 @@ class TAPAttacker(BaseAttacker):
                     attack_content_json = json.loads(attack_content)
                     break
                 except Exception as e:
+                    time.sleep(1)
                     attempt += 1
                     self._log_retrying(attempt=attempt, e=e, error_msg=attack_content)
                 # print(attack_content)

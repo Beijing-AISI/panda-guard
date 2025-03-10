@@ -1,45 +1,45 @@
 attacker:
   attack_llm_config:
-    device_map: cuda:4
-    llm_type: HuggingFaceLLM
-    model_name: meta-llama/Llama-3.1-8B-Instruct
+    api_key: token-casia-braincog-233
+    base_url: http://172.18.131.14:8002/v1
+    llm_type: OpenAiLLM
+    model_name: Llama-3.1-70B-Instruct
   attack_llm_gen_config:
     logprobs: false
-    max_n_tokens: 1000000000
-    seed: 12
-    temperature: 1.0
+    max_n_tokens: 100000
+    temperature: 0.001
   attacker_cls: TAPAttacker
   attacker_name: TAP
-  branching_factor: 3
+  branching_factor: 2
   depth: 2
   tap_judge_config:
     judge_cls: TAPLLMJudge
     judge_llm_config:
-      device_map: cuda:5
-      llm_type: HuggingFaceLLM
-      model_name: meta-llama/Llama-3.1-8B-Instruct
+      api_key: token-casia-braincog-233
+      base_url: http://172.18.131.14:8002/v1
+      llm_type: OpenAiLLM
+      model_name: Llama-3.1-70B-Instruct
     judge_llm_gen_config:
       logprobs: false
       max_n_tokens: 100000
-      seed: 12
-      temperature: 1.0
+      temperature: 0.001
     judge_name: TAPJudge
   target_llm_config:
-    device_map: cuda:3
-    llm_type: HuggingFaceLLM
-    model_name: meta-llama/Llama-3.1-8B-Instruct
+    api_key: token-casia-braincog-233
+    base_url: http://172.18.131.14:8002/v1
+    llm_type: OpenAiLLM
+    model_name: Llama-3.1-70B-Instruct
   target_llm_gen_config:
     logprobs: false
     max_n_tokens: 100000
-    seed: 42
-    temperature: 1.0
+    temperature: 0.001
   target_str: Sure.
-  width: 3
+  width: 2
 defender:
   defender_cls: NoneDefender
   target_llm_config:
     llm_type: HuggingFaceLLM
-    model_name: meta-llama/Meta-Llama-3.1-8B-Instruct
+    model_name: Qwen/Qwen2.5-1.5B-Instruct
   target_llm_gen_config:
     logprobs: false
     max_n_tokens: 150

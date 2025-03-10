@@ -6,8 +6,9 @@ from jailbreakpipe.llms import create_llm, BaseLLMConfig, LLMGenerateConfig
 from jailbreakpipe.role.judges import PairLLMJudgeConfig, create_judge
 from jailbreakpipe.utils import *
 import json
+import time
 
-RETRY = 10
+RETRY = 100_000
 
 
 def roleplaying_prompt():
@@ -529,7 +530,8 @@ class PairAttacker(BaseAttacker):
                     attack_prompt = self._extract_prompt(conv_after_attack)
                     break
                 except Exception as e:
-
+                    
+                    time.sleep(1)
                     attempt += 1
                     full_conv.pop()
                     self._log_retrying(
