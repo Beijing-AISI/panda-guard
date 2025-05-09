@@ -29,13 +29,16 @@ def create_llm(config: BaseLLMConfig) -> BaseLLM:
     config_class_name = config.__class__.__name__
     if config_class_name.endswith("Config"):
         llm_class_name = config_class_name[:-6]
-        try:
-            llm_class = llm_registry.get_component_class(llm_class_name)
-            return llm_class(config)
-        except ValueError:
-            pass
+        # try:
+        #     llm_class = llm_registry.get_component_class(llm_class_name)
+        #     return llm_class(config)
+        # except ValueError:
+        #     pass
 
-    raise ValueError(f"Cannot Create LLM from Config: {config}")
+        llm_class = llm_registry.get_component_class(llm_class_name)
+        return llm_class(config)
+
+    # raise ValueError(f"Cannot Create LLM from Config: {config}")
 
 LLMS = {}
 
