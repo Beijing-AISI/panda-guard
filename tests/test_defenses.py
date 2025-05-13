@@ -8,7 +8,7 @@ from panda_guard.llms.hf import HuggingFaceLLMConfig
 from panda_guard.role.judges.llm_based import PairLLMJudgeConfig
 
 
-@pytest.fixture
+@pytest.fixture()
 def input_attack():
     return [
         {
@@ -23,36 +23,46 @@ def check_response(msg):
 
 
 class TestSelfDefenseDefense:
-    @pytest.fixture(scope="class")
-    def create_selfdefense_config():
-        # factory
-        def selfdefense_config():
-            config = SelfDefenseDefenderConfig(
-                target_llm_config=HuggingFaceLLMConfig(
-                    model_name="meta-llama/Meta-Llama-3.1-8B-Instruct",
-                    device_map="sequential",
-                ),
-                target_llm_gen_config=LLMGenerateConfig(
-                    max_n_tokens=4096, temperature=1.0, logprobs=False
-                ),
-                judge_config=PairLLMJudgeConfig(
-                    judge_cls="PairLLMJudge",
-                    judge_name="PAIR",
-                    judge_llm_config=HuggingFaceLLMConfig(
-                        model_name="meta-llama/Meta-Llama-3.1-8B-Instruct",
-                        device_map="sequential",
-                    ),
-                    judge_llm_gen_config=LLMGenerateConfig(
-                        max_n_tokens=4096, temperature=1.0, logprobs=False
-                    ),
-                ),
-                judge_score_threshold=5,
-            )
-            return config
+    def get_selfdefense_config(self):
+        config = SelfDefenseDefenderConfig(
+            target_llm_config=HuggingFaceLLMConfig(
+                model_name="Qwen/Qwen3-0.6B",
+                device_map="sequential",
+            ),
+            target_llm_gen_config=LLMGenerateConfig(
+                max_n_tokens=4096, temperature=1.0, logprobs=False
+            ),
+            judge_config={
+                "judge_cls": "PairLLMJudge",
+                "judge_name": "PAIR",
+                "judge_llm_config": {
+                    "model_name": "Qwen/Qwen3-0.6B",
+                    "llm_type": "HuggingFaceLLM",
+                    "device_map": "sequential",
+                },
+                "judge_llm_gen_config": {
+                    "max_n_tokens": 4096,
+                    "temperature": 1.0,
+                    "logprobs": False,
+                    "seed": 42,
+                },
+            },
+            # judge_config=PairLLMJudgeConfig(
+            #     judge_cls="PairLLMJudge",
+            #     judge_name="PAIR",
+            #     judge_llm_config=HuggingFaceLLMConfig(
+            #         model_name="meta-llama/Meta-Llama-3.1-8B-Instruct",
+            #         device_map="sequential",
+            #     ),
+            #     judge_llm_gen_config=LLMGenerateConfig(
+            #         max_n_tokens=4096, temperature=1.0, logprobs=False
+            #     ),
+            # ),
+            judge_score_threshold=5,
+        )
+        return config
 
-        return selfdefense_config
-
-    def test_selfdefense_defense(create_selfdefense_config, input_attack):
-        selfdefense = SelfDefenseDefender(config=create_selfdefense_config())
+    def test_selfdefense_defense(self, input_attack):
+        selfdefense = SelfDefenseDefender(config=self.get_selfdefense_config())
         defense_response_msg = selfdefense.defense(messages=input_attack)
         assert check_response(defense_response_msg) is True
