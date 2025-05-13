@@ -4,3 +4,6 @@
 4. for SGLang:
     * uv pip install "sglang[all]>=0.4.6.post3"
     * uv pip install "patch==1.*"
+5. for Ollama:
+    * curl -fsSL https://ollama.com/install.sh | sh
+    * uv pip install ollama
