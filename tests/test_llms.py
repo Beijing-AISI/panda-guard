@@ -11,6 +11,8 @@ from panda_guard.llms.hf import HuggingFaceLLMConfig, HuggingFaceLLM
 from panda_guard.llms.vllm import VLLMLLMConfig, VLLMLLM
 from panda_guard.llms.gemini import GeminiLLMConfig, GeminiLLM
 from panda_guard.llms.claude import ClaudeLLM, ClaudeLLMConfig
+from panda_guard.llms.sglang_llm import SGLangLLM, SGLangLLMConifg
+from panda_guard.llms.ollama_llm import OllamaLLM, OllamaLLMConfig
 
 
 def check_response(msg):
@@ -96,3 +98,22 @@ class TestLLMs:
         messages = [{"role": "user", "content": input_prompt}]
         response_msg = llm.generate(messages=messages, config=self.llm_gen_config())
         assert check_response(response_msg) is True
+
+    def test_sglang_gen(self, input_prompt):
+        llm_gen_config = LLMGenerateConfig(
+            max_n_tokens=100, temperature=0.7, logprobs=True, seed=42
+        )
+        llm = SGLangLLM(config=SGLangLLMConifg(model_name="qwen/qwen2.5-0.5b-instruct"))
+
+        msg = [{"role": "user", "content": input_prompt}]
+        msg = llm.generate(messages=msg, config=llm_gen_config)
+        assert check_response(msg) is True
+
+    def test_ollama_gen(self, input_prompt):
+        llm_gen_config = LLMGenerateConfig(
+            max_n_tokens=100, temperature=0.7, logprobs=True, seed=42
+        )
+        llm = OllamaLLM(config=OllamaLLMConfig(model_name="qwen3:0.6b"))
+        msg = [{"role": "user", "content": input_prompt}]
+        message = llm.generate(messages=msg, config=llm_gen_config)
+        assert check_response(message) is True
