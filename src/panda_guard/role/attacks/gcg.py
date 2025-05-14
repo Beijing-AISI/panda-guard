@@ -41,7 +41,7 @@ class GCGAttackerConfig(BaseAttackerConfig):
     early_stop: bool = field(default=False)
     use_prefix_cache: bool = field(default=True)
     allow_non_ascii: bool = field(default=False)
-    if_filter_ids: bool = field(default=True)
+    filter_ids: bool = field(default=True)
     add_space_before_target: bool = field(default=False)
     seed: int = field(default=None)
 
@@ -201,8 +201,8 @@ class GCGAttacker(BaseAttacker):
                     not_allowed_ids=self.not_allowed_ids,
                 )
 
-                if self.if_filter_ids:
-                    sampled_ids = self.filter_ids(sampled_ids, self.llm.tokenizer)
+                if self.filter_ids:
+                    sampled_ids = self.filter_ids_op(sampled_ids, self.llm.tokenizer)
 
                 new_search_width = sampled_ids.shape[0]
 
@@ -393,7 +393,7 @@ class GCGAttacker(BaseAttacker):
 
         return torch.cat(all_loss, dim=0)
 
-    def filter_ids(self, ids: Tensor, tokenizer: transformers.PreTrainedTokenizer):
+    def filter_ids_op(self, ids: Tensor, tokenizer: transformers.PreTrainedTokenizer):
         """Filters out sequeneces of token ids that change after retokenization.
 
         Args:
@@ -420,7 +420,7 @@ class GCGAttacker(BaseAttacker):
             # This occurs in some cases, e.g. using the Llama-3 tokenizer with a bad initialization
             raise RuntimeError(
                 "No token sequences are the same after decoding and re-encoding. "
-                "Consider setting `if_filter_ids=False` or trying a different `optim_str_init`"
+                "Consider setting `filter_ids=False` or trying a different `optim_str_init`"
             )
 
         return torch.stack(filtered_ids)
