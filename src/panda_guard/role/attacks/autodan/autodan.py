@@ -30,7 +30,7 @@ class AutoDanAttackerConfig(BaseAttackerConfig):
     :param num_points:   The number of nodes in the genetic algorithm that perform crossovers
     :param iter:   Perform GA once after iter times HGA
     :param num_elites:   Number of elites
-    :param crossover_rate:   Crossover probability
+    :param crossover:   Crossover probability
     :param mutation:   The probability that the mutation will occur
     :param init_adv_prompts_path:   The file path of the initial adversarial prompt population
     """
@@ -47,10 +47,10 @@ class AutoDanAttackerConfig(BaseAttackerConfig):
     mutation_llm_config: BaseLLMConfig = field(default_factory=BaseLLMConfig)
     mutation_llm_gen_config: LLMGenerateConfig = field(default=None)
     num_elites: float = field(default=0.1)
-    crossover_rate: float = field(default=0.5)
+    crossover: float = field(default=0.5)
     mutation: float = field(default=0.01)
     allow_non_ascii: bool = field(default=False)
-    init_adv_prompts_path: str = field(default="../../panda_guard/role/attacks/autodan/prompt_group.yaml")
+    init_adv_prompts_path: str = field(default="../../src/panda_guard/role/attacks/autodan/prompt_group.yaml")
 
 
 class AutoDanAttacker(BaseAttacker):
@@ -222,7 +222,7 @@ class AutoDanAttacker(BaseAttacker):
 
         # Step 4: Apply crossover and mutation to the selected parents
         offspring = self.apply_crossover_and_mutation(parents_list, self.mutation_llm, self.mutation_llm_gen_config,
-                                                 crossover_probability=self.crossover_rate,
+                                                 crossover_probability=self.crossover,
                                                  num_points=self.num_points,
                                                  mutation_rate=self.mutation,
                                                  reference=reference,
@@ -258,7 +258,7 @@ class AutoDanAttacker(BaseAttacker):
 
         # Step 4: Apply word replacement with roulette wheel selection
 
-        offspring = self.apply_word_replacement(word_dict, parents_list, self.crossover_rate)
+        offspring = self.apply_word_replacement(word_dict, parents_list, self.crossover)
         offspring = self.apply_gpt_mutation(offspring, self.mutation, self.mutation_llm, self.mutation_llm_gen_config,
                                        reference=reference, if_api=if_api)
 
@@ -291,7 +291,7 @@ class AutoDanAttacker(BaseAttacker):
             parent2 = selected_data[i + 1] if (i + 1) < len(selected_data) else selected_data[0]
 
             if random.random() < crossover_probability:
-                child1, child2 = self.crossover(parent1, parent2, num_points)
+                child1, child2 = self.crossover_func(parent1, parent2, num_points)
                 offspring.append(child1)
                 offspring.append(child2)
             else:
@@ -303,7 +303,7 @@ class AutoDanAttacker(BaseAttacker):
 
         return mutated_offspring
 
-    def crossover(self, str1, str2, num_points):
+    def crossover_func(self, str1, str2, num_points):
         # Function to split text into paragraphs and then into sentences
         def split_into_paragraphs_and_sentences(text):
             paragraphs = text.split('\n\n')
