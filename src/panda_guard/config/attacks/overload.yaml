@@ -1,0 +1,9 @@
+attacker_cls: "OverloadAttacker"
+attacker_name: "Overload"
+dict_type: "all"
+random_dict: 30
+lenmin: 1
+lenmax: 5
+value_len: 1
+strlen: 1
+mask_loc: "before"

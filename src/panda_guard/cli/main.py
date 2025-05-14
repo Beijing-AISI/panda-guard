@@ -1,10 +1,13 @@
 # src/panda_guard/cli/main.py
 import typer
-from panda_guard.cli import chat, serve
+from panda_guard.cli import chat, serve, attack, inference, eval
 
 app = typer.Typer(help="Panda Guard: An Open Pipeline for Jailbreaking Language Models")
 
 # Add subcommands
+app.add_typer(attack.app, name="attack")
+app.add_typer(inference.app, name="inference")
+app.add_typer(eval.app, name="eval")
 app.add_typer(chat.app, name="chat")
 app.add_typer(serve.app, name="serve")
 

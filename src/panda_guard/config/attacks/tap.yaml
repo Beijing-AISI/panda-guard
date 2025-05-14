@@ -1,0 +1,62 @@
+
+attacker_cls: TAPAttacker
+attacker_name: TAP
+
+target_str: Sure.
+width: 2
+branching_factor: 2
+depth: 2
+
+target_llm_config:
+  # llm_type: HuggingFaceLLM
+  # model_name: meta-llama/Llama-3.1-8B-Instruct
+  # # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+  # device_map: "6"
+  llm_type: OpenAiLLM
+  model_name: Llama-3.1-70B-Instruct
+  api_key: token-casia-braincog-233
+  base_url: http://172.18.131.14:8002/v1
+target_llm_gen_config: 
+  max_n_tokens: 4096
+  temperature: 0.001
+  logprobs: false
+  # seed: 42
+attack_llm_config:
+  # llm_type: HuggingFaceLLM
+  # # model_name: meta-llama/Llama-3.1-8B-Instruct
+  # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+  # device_map: "0,1,2"
+  llm_type: OpenAiLLM
+  model_name: Llama-3.1-70B-Instruct
+  api_key: token-casia-braincog-233
+  base_url: http://172.18.131.14:8002/v1
+attack_llm_gen_config:
+  max_n_tokens: 4096
+  temperature: 0.001
+  logprobs: false
+  # seed: 12
+
+tap_judge_config:
+  judge_cls: TAPLLMJudge
+  judge_name: TAPJudge
+  judge_llm_config: 
+    # llm_type: HuggingFaceLLM
+    # # model_name: meta-llama/Llama-3.1-8B-Instruct
+    # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+    # device_map: "3,4,5"
+    llm_type: OpenAiLLM
+    model_name: Llama-3.1-70B-Instruct
+    api_key: token-casia-braincog-233
+    base_url: http://172.18.131.14:8002/v1
+  judge_llm_gen_config: 
+    max_n_tokens: 4096
+    temperature: 0.001
+    logprobs: false
+    # seed: 12
+
+  # system_template_score: 
+  # system_template_topic: 
+  # user_template_score:     
+  # user_template_topic:
+
+# attacker_sys_prompt:

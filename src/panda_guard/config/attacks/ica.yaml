@@ -1,0 +1,17 @@
+attacker_cls: "IcaAttacker"
+attacker_name: "ICA"
+
+# target llm configs
+target_llm_config:
+#  llm_type: "HuggingFaceLLM"
+#  model_name: "meta-llama/Llama-3.1-8B-Instruct"
+#  device_map: cuda:0
+
+  llm_type: "HuggingFaceLLM"
+  model_name: "meta-llama/Meta-Llama-3.1-70B-Instruct"
+
+target_llm_gen_config:
+  max_n_tokens: 4096
+  temperature: 1.0
+  logprobs: False
+  seed: null
