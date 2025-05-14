@@ -11,16 +11,10 @@ from panda_guard.llms.base import BaseLLM, BaseLLMConfig, LLMGenerateConfig
 
 from panda_guard.utils import ComponentRegistry
 
-llm_registry = ComponentRegistry[BaseLLM](
-    "llm",
-    BaseLLM,
-    "panda_guard.llms"
-)
+llm_registry = ComponentRegistry[BaseLLM]("llm", BaseLLM, "panda_guard.llms")
 
 config_registry = ComponentRegistry[BaseLLMConfig](
-    "llm_config",
-    BaseLLMConfig,
-    "panda_guard.llm_configs"
+    "llm_config", BaseLLMConfig, "panda_guard.llm_configs"
 )
 
 
@@ -29,18 +23,17 @@ def create_llm(config: BaseLLMConfig) -> BaseLLM:
     config_class_name = config.__class__.__name__
     if config_class_name.endswith("Config"):
         llm_class_name = config_class_name[:-6]
-        # try:
-        #     llm_class = llm_registry.get_component_class(llm_class_name)
-        #     return llm_class(config)
-        # except ValueError:
-        #     pass
+        try:
+            llm_class = llm_registry.get_component_class(llm_class_name)
+            return llm_class(config)
+        except ValueError:
+            pass
 
-        llm_class = llm_registry.get_component_class(llm_class_name)
-        return llm_class(config)
+    raise ValueError(f"Cannot Create LLM from Config: {config}")
 
-    # raise ValueError(f"Cannot Create LLM from Config: {config}")
 
 LLMS = {}
+
 
 def __getattr__(name):
     try:
@@ -53,4 +46,3 @@ def __getattr__(name):
             return llm_class
     except ValueError:
         raise AttributeError(f"module 'panda_guard.llms' has no attribute '{name}'")
-
