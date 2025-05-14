@@ -38,7 +38,6 @@ class GeminiLLMConfig(BaseLLMConfig):
     safety_settings: Dict[str, str] = field(default=None)
 
 
-
 class GeminiLLM(BaseLLM):
     """
     Gemini LLM Implementation.
@@ -52,7 +51,9 @@ class GeminiLLM(BaseLLM):
         # Use provided API key or try to get from environment variable
         api_key = config.api_key or os.getenv("GOOGLE_API_KEY")
         if not api_key:
-            raise ValueError("API key must be provided or set as GOOGLE_API_KEY environment variable")
+            raise ValueError(
+                "API key must be provided or set as GOOGLE_API_KEY environment variable"
+            )
 
         # Configure the Gemini API
         genai.configure(api_key=api_key)
@@ -71,13 +72,16 @@ class GeminiLLM(BaseLLM):
 
             if safety_settings:
                 self.model = genai.GenerativeModel(
-                    model_name=self._NAME,
-                    safety_settings=safety_settings
+                    model_name=self._NAME, safety_settings=safety_settings
                 )
 
     def generate(
-            self, messages: List[Dict[str, str]], config: LLMGenerateConfig
-    ) -> Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]], Generator[str, None, None]]:
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+    ) -> Union[
+        List[Dict[str, str]],
+        Tuple[List[Dict[str, str]], List[float]],
+        Generator[str, None, None],
+    ]:
         """
         Generate a response for a given input using Google Gemini API.
 
@@ -105,15 +109,21 @@ class GeminiLLM(BaseLLM):
                 for msg in messages_to_process:
                     role = msg["role"]
                     if role == "user":
-                        gemini_messages.append({"role": "user", "parts": [msg["content"]]})
+                        gemini_messages.append(
+                            {"role": "user", "parts": [msg["content"]]}
+                        )
                     elif role == "assistant":
-                        gemini_messages.append({"role": "model", "parts": [msg["content"]]})
+                        gemini_messages.append(
+                            {"role": "model", "parts": [msg["content"]]}
+                        )
 
                 # Create chat session with system prompt if available
                 if system_prompt:
                     chat = self.model.start_chat(system_instruction=system_prompt)
                 else:
-                    chat = self.model.start_chat(history=gemini_messages[:-1] if gemini_messages else [])
+                    chat = self.model.start_chat(
+                        history=gemini_messages[:-1] if gemini_messages else []
+                    )
 
                 # Get the latest user message or use an empty one if none exists
                 latest_user_msg = {"parts": ["Hello"]}  # Default fallback
@@ -122,25 +132,28 @@ class GeminiLLM(BaseLLM):
 
                 # Generate response config
                 generation_config = {
-                    "temperature": config.temperature if config.temperature is not None else 0.7,
+                    "temperature": (
+                        config.temperature if config.temperature is not None else 0.7
+                    ),
                     "max_output_tokens": config.max_n_tokens,
                 }
 
-                if config.seed is not None:
-                    generation_config["seed"] = config.seed
+                # if config.seed is not None:
+                #     generation_config["seed"] = config.seed
 
                 # Handle streaming mode
                 if config.stream:
                     full_content = ""
 
                     # For Gemini, approximate token counts
-                    prompt_tokens = sum(len(msg.get("content", "")) for msg in messages) // 4
+                    prompt_tokens = (
+                        sum(len(msg.get("content", "")) for msg in messages) // 4
+                    )
                     completion_tokens = 0
 
                     # Create streaming request
                     stream_response = chat.send_message_streaming(
-                        latest_user_msg["parts"][0],
-                        generation_config=generation_config
+                        latest_user_msg["parts"][0], generation_config=generation_config
                     )
 
                     def stream_generator():
@@ -174,8 +187,7 @@ class GeminiLLM(BaseLLM):
                 # Non-streaming mode (original code)
                 else:
                     response = chat.send_message(
-                        latest_user_msg["parts"][0],
-                        generation_config=generation_config
+                        latest_user_msg["parts"][0], generation_config=generation_config
                     )
 
                     content = response.text
@@ -183,7 +195,9 @@ class GeminiLLM(BaseLLM):
 
                     # Approximate token counts (Gemini API doesn't return token counts directly)
                     # Rough approximation: 1 token ≈ 4 characters for English text
-                    prompt_tokens = sum(len(msg.get("content", "")) for msg in messages[:-1]) // 4
+                    prompt_tokens = (
+                        sum(len(msg.get("content", "")) for msg in messages[:-1]) // 4
+                    )
                     completion_tokens = len(content) // 4
 
                     self.update(
@@ -194,30 +208,45 @@ class GeminiLLM(BaseLLM):
 
                     # Gemini API doesn't support logprobs
                     if config.logprobs:
-                        warnings.warn("Gemini API does not support logprobs, returning response without them.")
+                        warnings.warn(
+                            "Gemini API does not support logprobs, returning response without them."
+                        )
                         return messages
 
                     return messages
 
             except Exception as e:
                 # Handle safety/content policy issues
-                if "safety" in str(e).lower() or "harm" in str(e).lower() or "blocked" in str(e).lower():
-                    messages.append({"role": "assistant", "content": "I'm sorry, I can't help with that."})
-                    print(f"API request Safety Issue, {self._NAME}, Error: {e}, returning safety message.")
+                if (
+                    "safety" in str(e).lower()
+                    or "harm" in str(e).lower()
+                    or "blocked" in str(e).lower()
+                ):
+                    messages.append(
+                        {
+                            "role": "assistant",
+                            "content": "I'm sorry, I can't help with that.",
+                        }
+                    )
+                    print(
+                        f"API request Safety Issue, {self._NAME}, Error: {e}, returning safety message."
+                    )
                     return messages
 
                 retry_count += 1
                 if retry_count >= max_retries:
                     raise RuntimeError(
-                        f"API request failed when testing model {self._NAME}, tried: {max_retries}, Error: {e}")
+                        f"API request failed when testing model {self._NAME}, tried: {max_retries}, Error: {e}"
+                    )
                 else:
                     print(
-                        f"API request failed when testing model {self._NAME}, retrying {retry_count}/{max_retries}... Error: {e}")
+                        f"API request failed when testing model {self._NAME}, retrying {retry_count}/{max_retries}... Error: {e}"
+                    )
                     time.sleep(retry_count)  # Exponential backoff
         return None
 
     def continual_generate(
-            self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ):
         """
         Generate continuation for the last message.
@@ -235,7 +264,9 @@ class GeminiLLM(BaseLLM):
             convo_messages.pop()
 
             # Add a user message requesting continuation
-            convo_messages.append({"role": "user", "content": "Please continue your previous response."})
+            convo_messages.append(
+                {"role": "user", "content": "Please continue your previous response."}
+            )
 
             # Generate continuation
             result = self.generate(convo_messages, config)
@@ -251,14 +282,16 @@ class GeminiLLM(BaseLLM):
                 messages[-1]["content"] = last_assistant_content + " " + cont_content
                 return messages
         else:
-            warnings.warn("The last message must be from the assistant to use continual_generate.")
+            warnings.warn(
+                "The last message must be from the assistant to use continual_generate."
+            )
             return self.generate(messages, config)
 
     def evaluate_log_likelihood(
-            self,
-            messages: List[Dict[str, str]],
-            config: LLMGenerateConfig,
-            require_grad=False
+        self,
+        messages: List[Dict[str, str]],
+        config: LLMGenerateConfig,
+        require_grad=False,
     ) -> List[float]:
         """
         Evaluate the log likelihood of the given messages.
@@ -283,15 +316,14 @@ if __name__ == "__main__":
     )
 
     config = GeminiLLMConfig(
-        model_name="gemini-1.5-pro",
-        api_key=os.getenv("GOOGLE_API_KEY")
+        model_name="gemini-1.5-pro", api_key=os.getenv("GOOGLE_API_KEY")
     )
 
     llm = GeminiLLM(config)
 
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Hello, how are you?"}
+        {"role": "user", "content": "Hello, how are you?"},
     ]
 
     result = llm.generate(messages, llm_gen_config)

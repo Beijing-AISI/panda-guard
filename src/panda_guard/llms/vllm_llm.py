@@ -61,13 +61,17 @@ class VLLMLLM(BaseLLM):
                 trust_remote_code=config.trust_remote_code,
             )
         except Exception as e:
-            raise RuntimeError(f"Failed to initialize VLLM for model {config.model_name}: {e}")
+            raise RuntimeError(
+                f"Failed to initialize VLLM for model {config.model_name}: {e}"
+            )
 
         # Try to get tokenizer for token counting
         try:
             self.tokenizer = self.vllm_engine.get_tokenizer()
         except:
-            warnings.warn(f"Could not get tokenizer from model {config.model_name}, token counting may be inaccurate.")
+            warnings.warn(
+                f"Could not get tokenizer from model {config.model_name}, token counting may be inaccurate."
+            )
             self.tokenizer = None
 
     def _format_messages(self, messages: List[Dict[str, str]]) -> str:
@@ -103,8 +107,12 @@ class VLLMLLM(BaseLLM):
             return formatted_prompt
 
     def generate(
-            self, messages: List[Dict[str, str]], config: LLMGenerateConfig
-    ) -> Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]], Generator[str, None, None]]:
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+    ) -> Union[
+        List[Dict[str, str]],
+        Tuple[List[Dict[str, str]], List[float]],
+        Generator[str, None, None],
+    ]:
         """
         Generate a response using VLLM.
 
@@ -119,9 +127,11 @@ class VLLMLLM(BaseLLM):
             # Set up sampling parameters
             sampling_params = SamplingParams(
                 max_tokens=config.max_n_tokens,
-                temperature=config.temperature if config.temperature is not None else 0.7,
+                temperature=(
+                    config.temperature if config.temperature is not None else 0.7
+                ),
                 seed=config.seed,
-                logprobs=config.logprobs,
+                # logprobs=config.logprobs,
             )
 
             # Handle streaming mode
@@ -141,7 +151,7 @@ class VLLMLLM(BaseLLM):
                 outputs_generator = self.vllm_engine.generate(
                     prompts=[prompt],
                     sampling_params=sampling_params,
-                    stream=True  # Enable streaming
+                    stream=True,  # Enable streaming
                 )
 
                 def stream_response():
@@ -152,8 +162,10 @@ class VLLMLLM(BaseLLM):
                         current_text = output.outputs[0].text
 
                         # Extract the new content since last yield
-                        if last_output_text and current_text.startswith(last_output_text):
-                            new_content = current_text[len(last_output_text):]
+                        if last_output_text and current_text.startswith(
+                            last_output_text
+                        ):
+                            new_content = current_text[len(last_output_text) :]
                         else:
                             new_content = current_text
 
@@ -191,8 +203,7 @@ class VLLMLLM(BaseLLM):
             else:
                 # Generate outputs using VLLM
                 outputs = self.vllm_engine.generate(
-                    prompts=[prompt],
-                    sampling_params=sampling_params
+                    prompts=[prompt], sampling_params=sampling_params
                 )
 
                 # Extract generated text and logprobs
@@ -232,8 +243,15 @@ class VLLMLLM(BaseLLM):
             error_str = str(e).lower()
 
             # Handle safety-related errors
-            if any(term in error_str for term in ["content_policy", "safety", "harmful"]):
-                messages.append({"role": "assistant", "content": "I'm sorry, I can't help with that."})
+            if any(
+                term in error_str for term in ["content_policy", "safety", "harmful"]
+            ):
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": "I'm sorry, I can't help with that.",
+                    }
+                )
                 print(f"Safety issue detected with VLLM model {self._NAME}, Error: {e}")
                 return messages
 
@@ -241,9 +259,9 @@ class VLLMLLM(BaseLLM):
             raise RuntimeError(f"VLLM generation failed for model {self._NAME}: {e}")
 
     def batch_generate(
-            self,
-            batch_messages: List[List[Dict[str, str]]],
-            config: LLMGenerateConfig,
+        self,
+        batch_messages: List[List[Dict[str, str]]],
+        config: LLMGenerateConfig,
     ) -> List[List[Dict[str, str]]]:
         """
         Generate responses for a batch of messages in one go using VLLM's batching capabilities.
@@ -262,22 +280,25 @@ class VLLMLLM(BaseLLM):
             # Set up sampling parameters
             sampling_params = SamplingParams(
                 max_tokens=config.max_n_tokens,
-                temperature=config.temperature if config.temperature is not None else 0.7,
+                temperature=(
+                    config.temperature if config.temperature is not None else 0.7
+                ),
                 seed=config.seed,
                 logprobs=config.logprobs,
             )
 
             # Generate outputs for all prompts in a single batch
             outputs = self.vllm_engine.generate(
-                prompts=prompts,
-                sampling_params=sampling_params
+                prompts=prompts, sampling_params=sampling_params
             )
 
             # Process each output
             results = []
             for i, output in enumerate(outputs):
                 generated_text = output.outputs[0].text
-                batch_messages[i].append({"role": "assistant", "content": generated_text})
+                batch_messages[i].append(
+                    {"role": "assistant", "content": generated_text}
+                )
                 results.append(batch_messages[i])
 
                 # Count tokens if tokenizer is available
@@ -300,10 +321,12 @@ class VLLMLLM(BaseLLM):
 
         except Exception as e:
             # Handle batch errors
-            raise RuntimeError(f"VLLM batch generation failed for model {self._NAME}: {e}")
+            raise RuntimeError(
+                f"VLLM batch generation failed for model {self._NAME}: {e}"
+            )
 
     def continual_generate(
-            self, messages: List[Dict[str, str]], config: LLMGenerateConfig
+        self, messages: List[Dict[str, str]], config: LLMGenerateConfig
     ) -> Union[List[Dict[str, str]], Tuple[List[Dict[str, str]], List[float]]]:
         """
         Generate continuation for the existing conversation.
@@ -329,7 +352,9 @@ class VLLMLLM(BaseLLM):
             # Set up sampling parameters for continuation
             sampling_params = SamplingParams(
                 max_tokens=config.max_n_tokens,
-                temperature=config.temperature if config.temperature is not None else 0.7,
+                temperature=(
+                    config.temperature if config.temperature is not None else 0.7
+                ),
                 seed=config.seed,
                 logprobs=config.logprobs,
                 stop=None,  # No stop tokens for continuation
@@ -337,8 +362,7 @@ class VLLMLLM(BaseLLM):
 
             # Generate continuation
             outputs = self.vllm_engine.generate(
-                prompts=[prompt],
-                sampling_params=sampling_params
+                prompts=[prompt], sampling_params=sampling_params
             )
 
             output = outputs[0]
@@ -372,14 +396,15 @@ class VLLMLLM(BaseLLM):
         else:
             # If last message is not from assistant, fall back to normal generation
             warnings.warn(
-                "The last message must be from the assistant to use continual_generate, falling back to normal generation.")
+                "The last message must be from the assistant to use continual_generate, falling back to normal generation."
+            )
             return self.generate(messages, config)
 
     def evaluate_log_likelihood(
-            self,
-            messages: List[Dict[str, str]],
-            config: LLMGenerateConfig,
-            require_grad=False,
+        self,
+        messages: List[Dict[str, str]],
+        config: LLMGenerateConfig,
+        require_grad=False,
     ) -> List[float]:
         """
         Evaluate the log likelihood of the given messages.
@@ -430,11 +455,15 @@ class VLLMLLM(BaseLLM):
                     prefix_tokens = len(self.tokenizer.encode(prefix_prompt))
                     full_tokens = len(self.tokenizer.encode(full_prompt))
                     # The logprobs we need are for the tokens after prefix_tokens
-                    token_logprobs = outputs[0].outputs[0].logprobs[prefix_tokens:full_tokens]
+                    token_logprobs = (
+                        outputs[0].outputs[0].logprobs[prefix_tokens:full_tokens]
+                    )
                     logprobs = [lp[0][1] for lp in token_logprobs]
                 else:
                     # Rough approximation if tokenizer isn't available
-                    warnings.warn("Tokenizer not available, log likelihood evaluation may be inaccurate")
+                    warnings.warn(
+                        "Tokenizer not available, log likelihood evaluation may be inaccurate"
+                    )
                     # Just return the logprobs VLLM gives us
                     logprobs = [lp[0][1] for lp in outputs[0].outputs[0].logprobs]
 
@@ -449,7 +478,9 @@ class VLLMLLM(BaseLLM):
                 raise RuntimeError("VLLM did not return logprobs")
 
         except Exception as e:
-            raise RuntimeError(f"Log likelihood evaluation failed for model {self._NAME}: {e}")
+            raise RuntimeError(
+                f"Log likelihood evaluation failed for model {self._NAME}: {e}"
+            )
 
 
 if __name__ == "__main__":
@@ -458,11 +489,11 @@ if __name__ == "__main__":
     print(LLMS)
 
     llm_gen_config = LLMGenerateConfig(
-        max_n_tokens=100, temperature=0.7, logprobs=True, seed=42
+        max_n_tokens=100, temperature=0.7, seed=42, logprobs=False
     )
 
     config = VLLMLLMConfig(
-        model_name="meta-llama/Llama-2-7b-chat-hf",
+        model_name="Qwen/Qwen3-0.6B",
         tensor_parallel_size=1,  # Use 1 GPU
         gpu_memory_utilization=0.8,
     )
@@ -471,13 +502,8 @@ if __name__ == "__main__":
 
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Hello, how are you?"}
+        {"role": "user", "content": "Hello, how are you?"},
     ]
 
     result = llm.generate(messages, llm_gen_config)
-    if isinstance(result, tuple):
-        msgs, logprobs = result
-        print(msgs[-1]["content"])
-        print(f"Log probs: {logprobs[:5]}...")  # Show first 5 logprobs
-    else:
-        print(result[-1]["content"])
+    print(result)
