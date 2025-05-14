@@ -4,6 +4,7 @@ from typing import Dict, List, Union, Any, Tuple, Generator
 from panda_guard.llms import BaseLLM, BaseLLMConfig, LLMGenerateConfig
 from sglang.test.test_utils import is_in_ci
 from sglang.utils import wait_for_server, print_highlight, terminate_process
+import atexit
 
 if is_in_ci():
     from patch import launch_server_cmd
@@ -30,6 +31,9 @@ class SGLangLLM(BaseLLM):
         self.server_process, self.port = server_process, port
         self.url = f"http://localhost:{self.port}/v1/chat/completions"
         wait_for_server(f"http://localhost:{port}")
+
+        # auto tear down
+        atexit.register(self.sglang_teardown)
 
     def sglang_teardown(self):
         """Tear down subprocess"""
@@ -69,4 +73,4 @@ if __name__ == "__main__":
     msg = [{"role": "user", "content": "What is the capital of France?"}]
     msg = llm.generate(messages=msg, config=llm_gen_config)
     print(msg)
-    llm.sglang_teardown()
+    # llm.sglang_teardown()

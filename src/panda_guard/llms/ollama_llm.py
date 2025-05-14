@@ -5,6 +5,7 @@ from ollama import chat
 from ollama import ChatResponse
 from panda_guard.llms import BaseLLM, BaseLLMConfig, LLMGenerateConfig
 import subprocess
+import atexit
 
 
 @dataclass
@@ -19,14 +20,16 @@ class OllamaLLM(BaseLLM):
         self.model_name = config.model_name
         ollama.pull(self.model_name)
 
+        # auto tear down
+        atexit.register(self.ollama_teardown)
+
     def generate(self, messages: List[Dict[str, str]], config: LLMGenerateConfig):
         response: ChatResponse = chat(
             model=self.model_name,
             messages=messages,
         )
-        print(response["message"]["content"])
-        # or access fields directly from the response object
-        print(response.message.content)
+        messages.append({"role": "assistant", "content": response.message.content})
+        return messages
 
     def ollama_teardown(self):
         print("Stopping Ollama session...")
@@ -53,5 +56,6 @@ if __name__ == "__main__":
     )
     llm = OllamaLLM(config=OllamaLLMConfig())
     msg = [{"role": "user", "content": "Why is the sky red?"}]
-    llm.generate(messages=msg, config=llm_gen_config)
-    llm.ollama_teardown()
+    message = llm.generate(messages=msg, config=llm_gen_config)
+    print(message)
+    # llm.ollama_teardown()
