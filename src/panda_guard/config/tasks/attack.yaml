@@ -1,0 +1,13 @@
+attacker:
+  attacker_cls: "NoneAttacker"
+  attacker_name: null
+  target_llm_config: null
+
+defender:
+  defender_cls: "NoneDefender"
+  target_llm_config: null
+  target_llm_gen_config:
+    max_n_tokens: 2048
+    temperature: 1.0
+    logprobs: False
+    seed: null

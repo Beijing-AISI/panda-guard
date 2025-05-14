@@ -1,0 +1,6 @@
+attacker_cls: DeepInceptionAttacker
+attacker_name: DeepInception
+
+# scence: defatult
+# character_number: default
+# layer_number: default

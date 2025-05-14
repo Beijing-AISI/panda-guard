@@ -1,0 +1,7 @@
+attacker_cls: "ScavAttacker"
+attacker_name: "Scav"
+
+target_llm_name: "meta-llama/llama-3.1-70b-in"
+
+optimzed_file_8b: "/home/shensicheng/code/panda-guard/data/scav/optimized_instructions_8b.csv"
+optimzed_file_70b: "/home/shensicheng/code/panda-guard/data/scav/optimized_instructions_70b.csv"
