@@ -3,13 +3,13 @@ attacker_name: PAIR
 
 # attack llm configs
 attack_llm_config:
-  # llm_type: HuggingFaceLLM
-  # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-  # device_map: sequential
-  llm_type: OpenAiLLM
-  model_name: Llama-3.1-70B-Instruct
-  api_key: token-casia-braincog-233
-  base_url: http://172.18.131.14:8002/v1
+   llm_type: HuggingFaceLLM
+   model_name: meta-llama/Meta-Llama-3.1-8B-Instruct
+   device_map: cuda:1
+#  llm_type: OpenAiLLM
+#  model_name: Llama-3.1-70B-Instruct
+#  api_key: token-casia-braincog-233
+#  base_url: http://172.18.131.14:8002/v1
 
 attacker_llm_gen_config:
   max_n_tokens: 4096
@@ -19,14 +19,14 @@ attacker_llm_gen_config:
 
 # target llm configs
 target_llm_config:
-  # llm_type: HuggingFaceLLM
-  # model_name: meta-llama/Llama-3.1-8B-Instruct
-  # # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-  # device_map: sequential
-  llm_type: OpenAiLLM
-  model_name: Llama-3.1-70B-Instruct
-  api_key: token-casia-braincog-233
-  base_url: http://172.18.131.14:8002/v1
+   llm_type: HuggingFaceLLM
+   model_name: meta-llama/Llama-3.1-8B-Instruct
+   # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+   device_map: cuda:2
+#  llm_type: OpenAiLLM
+#  model_name: Llama-3.1-70B-Instruct
+#  api_key: token-casia-braincog-233
+#  base_url: http://172.18.131.14:8002/v1
 target_llm_gen_config:
   max_n_tokens: 4096
   temperature: 0.0
@@ -38,14 +38,14 @@ pair_judge:
   judge_cls: PairLLMJudge
   judge_name: PAIR
   judge_llm_config:
-    # llm_type: HuggingFaceLLM
-    # # model_name: meta-llama/Llama-3.1-8B-Instruct
-    # model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-    # device_map: sequential
-    llm_type: OpenAiLLM
-    model_name: Llama-3.1-70B-Instruct
-    api_key: token-casia-braincog-233
-    base_url: http://172.18.131.14:8002/v1
+     llm_type: HuggingFaceLLM
+     model_name: meta-llama/Llama-3.1-8B-Instruct
+#     model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
+     device_map: cuda:4
+#    llm_type: OpenAiLLM
+#    model_name: Llama-3.1-70B-Instruct
+#    api_key: token-casia-braincog-233
+#    base_url: http://172.18.131.14:8002/v1
   judge_llm_gen_config:
     max_n_tokens: 4096
     temperature: 0.0

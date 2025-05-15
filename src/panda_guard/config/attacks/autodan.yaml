@@ -4,7 +4,7 @@ attacker_name: "AutoDan"
 target_llm_config:
   llm_type: "HuggingFaceLLM"
   model_name: "meta-llama/Llama-3.2-1B-Instruct"
-  device_map: "cuda:4"
+  device_map: cuda:6
 target_llm_gen_config:
   max_n_tokens: 4096
   temperature: 1.0
@@ -24,7 +24,7 @@ mutation: 0.01
 allow_non_ascii: False
 llm_mutation: False
 
-init_adv_prompts_path: "../../panda_guard/role/attacks/autodan/prompt_group.yaml"
+init_adv_prompts_path: "./src/panda_guard/role/attacks/autodan/prompt_group.yaml"
 
 #mutation_llm_gen_config:
 #mutation_llm_config:

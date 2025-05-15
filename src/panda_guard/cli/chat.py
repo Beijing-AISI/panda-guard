@@ -23,7 +23,7 @@ from rich import box
 from panda_guard.pipelines.inference import InferPipeline, InferPipelineConfig
 from panda_guard.utils import parse_configs_from_dict
 
-app = typer.Typer(help="Interactive chat with language models")
+app = typer.Typer(help="Interactive chat with language models", invoke_without_command=True)
 console = Console()
 
 
@@ -132,7 +132,7 @@ def display_help():
     console.print(help_table)
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def start(
         config: Optional[str] = typer.Argument(None, help="Path to YAML configuration file"),
         defense: Optional[Path] = typer.Option(None, "--defense", "-d",
@@ -205,23 +205,24 @@ def start(
 
             config_dict["judges"] = judge_configs
 
-        for judge_config_ids in range(len(config_dict.get("judges", []))):
-            if 'judge_llm_config' in config_dict["judges"][judge_config_ids]:
-                print("judge_llm_config:", config_dict["judges"][judge_config_ids])
-                if config_dict["judges"][judge_config_ids]["judge_llm_config"].get("base_url", None) is None:
-                    if os.environ.get("OPENAI_BASE_URL"):
-                        config_dict["judges"][judge_config_ids]["judge_llm_config"]["base_url"] = os.environ[
-                            "OPENAI_BASE_URL"]
-                    else:
-                        config_dict["judges"][judge_config_ids]["judge_llm_config"][
-                            "base_url"] = "https://api.openai.com/v1"
+        if len(config_dict.get("judges") or []) > 0:
+            for judge_config_ids in range(len(config_dict.get("judges", []))):
+                if 'judge_llm_config' in config_dict["judges"][judge_config_ids]:
+                    print("judge_llm_config:", config_dict["judges"][judge_config_ids])
+                    if config_dict["judges"][judge_config_ids]["judge_llm_config"].get("base_url", None) is None:
+                        if os.environ.get("OPENAI_BASE_URL"):
+                            config_dict["judges"][judge_config_ids]["judge_llm_config"]["base_url"] = os.environ[
+                                "OPENAI_BASE_URL"]
+                        else:
+                            config_dict["judges"][judge_config_ids]["judge_llm_config"][
+                                "base_url"] = "https://api.openai.com/v1"
 
-                if config_dict["judges"][judge_config_ids]["judge_llm_config"].get("api_key", None) is None:
-                    if os.environ.get("OPENAI_API_KEY"):
-                        config_dict["judges"][judge_config_ids]["judge_llm_config"]["api_key"] = os.environ[
-                            "OPENAI_API_KEY"]
-                    else:
-                        raise ValueError("API key not found for judge LLM config")
+                    if config_dict["judges"][judge_config_ids]["judge_llm_config"].get("api_key", None) is None:
+                        if os.environ.get("OPENAI_API_KEY"):
+                            config_dict["judges"][judge_config_ids]["judge_llm_config"]["api_key"] = os.environ[
+                                "OPENAI_API_KEY"]
+                        else:
+                            raise ValueError("API key not found for judge LLM config")
 
         endpoint_type = None
 

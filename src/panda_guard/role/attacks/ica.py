@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from copy import deepcopy
 from typing import Dict, List
 from dataclasses import dataclass, field
 from panda_guard.role.attacks import BaseAttacker, BaseAttackerConfig
@@ -95,18 +96,31 @@ class IcaAttacker(BaseAttacker):
         prompt_splits = question.split("\n")
 
         jailbreak_label = True
-        prompt_messages = ""
+        prompt_messages = []
 
         for prompt_num in range(1, 5):
-            prompt_messages = ""
-            for i in range(0, prompt_num, 2):
-                prompt_messages = prompt_messages + prompt_splits[i] + "\n"
-                prompt_messages = prompt_messages + prompt_splits[i+1] + "\n"
-            prompt_messages = prompt_messages + prompt_splits[-1] + "\n"
+            prompt_messages = []
+            for i in range(0, prompt_num * 2, 2):
+                if i < len(prompt_splits) - 1:
+                    # Extract user message (remove "User:" prefix)
+                    user_line = prompt_splits[i]
+                    if user_line.startswith("User:"):
+                        user_content = user_line[5:].strip()
+                        prompt_messages.append({"role": "user", "content": user_content})
 
-            messages = [{"role": "user", "content": prompt_messages}]
-            results = self.target_llm.generate(messages, self.config.target_llm_gen_config)
+                    # Extract assistant message (remove "Assistant:" prefix)
+                    assistant_line = prompt_splits[i + 1]
+                    if assistant_line.startswith("Assistant:"):
+                        assistant_content = assistant_line[10:].strip()
+                        prompt_messages.append({"role": "assistant", "content": assistant_content})
+            prompt_messages.append({"role": "user", "content": prompt_splits[-1][5:]})
 
+            # Create a deep copy of prompt_messages to prevent modifications
+            messages_copy = deepcopy(prompt_messages)
+            results = self.target_llm.generate(messages_copy, self.config.target_llm_gen_config)
+
+            # Check if jailbreak was successful
+            jailbreak_label = True
             for pattern in self.fail_pattern:
                 if pattern in results[-1]['content']:
                     jailbreak_label = False
@@ -114,5 +128,5 @@ class IcaAttacker(BaseAttacker):
 
             if jailbreak_label is True:
                 break
-        messages = [{"role": "user", "content": prompt_messages}]
-        return messages
+
+        return prompt_messages

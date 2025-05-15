@@ -17,7 +17,7 @@ from rich import box
 from panda_guard.pipelines.inference import InferPipeline, InferPipelineConfig
 from panda_guard.utils import parse_configs_from_dict
 
-app = typer.Typer(help="Large Language Model inference for given attacks, defenses, and judgments")
+app = typer.Typer(help="Large Language Model inference for given attacks, defenses, and judgments", invoke_without_command=True)
 console = Console()
 
 
@@ -110,7 +110,7 @@ def display_judge_results(results):
         console.print(f"[dim]{judge_name}:[/dim] {'⚠️ ' if str(verdict) == '10' else ''}{verdict} ")
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def start(
         config: Optional[str] = typer.Argument(None, help="Path to YAML task file"),
         input_file: Optional[str] = typer.Option(None, "--input-file", "-i", help="Path to file where inference is required"),
@@ -124,7 +124,6 @@ def start(
         device: Optional[str] = typer.Option(None, "--device", help="Device to run the model on (e.g., 'cuda:0')"),
         log_level: str = typer.Option("WARNING", "--log-level", help="Logging level (DEBUG, INFO, WARNING, ERROR)"),
         output_dir: str = typer.Option("./results", "--output-dir", "-o", help="Save results to file"),
-        stream: bool = typer.Option(True, "--stream/--no-stream", help="Enable/disable streaming output"),
         verbose: bool = typer.Option(False, "--verbose/--no-verbose",
                                      help="Enable/disable verbose mode with token usage info"),
 ):
@@ -206,15 +205,12 @@ def start(
         if model:
             config_dict["defender"]["target_llm_config"]['model_name'] = str(model)
             if "attacker" in config_dict and "target_llm_config" in config_dict.get("attacker", {}):
-                config_dict["attacker"]["target_llm_config"] = load_yaml(endpoint_path)
+                config_dict["attacker"]["target_llm_config"]['llm_type'] = load_yaml(endpoint_path)['llm_type']
                 config_dict["attacker"]["target_llm_config"]['model_name'] = str(model)
 
         # Override device if specified
         if device:
             config_dict["defender"]["target_llm_config"]["device_map"] = device
-
-        # Enable or disable streaming in the configuration
-        config_dict["defender"]["target_llm_gen_config"]["stream"] = stream
 
         print("Configuration loaded successfully:", config_dict)
 

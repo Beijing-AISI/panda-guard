@@ -14,7 +14,7 @@ from rich import box
 from panda_guard.pipelines.inference import InferPipeline, InferPipelineConfig
 from panda_guard.utils import parse_configs_from_dict
 
-app = typer.Typer(help="Interactive language model jailbreak attacks")
+app = typer.Typer(help="Interactive language model jailbreak attacks", invoke_without_command=True)
 console = Console()
 
 
@@ -123,7 +123,7 @@ def display_help():
     console.print(help_table)
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def start(
         config: Optional[str] = typer.Argument(None, help="Path to YAML configuration file"),
         attacker: Optional[Path] = typer.Option(None, "--attacker", "-a",
@@ -205,12 +205,14 @@ def start(
         if model:
             config_dict["defender"]["target_llm_config"]['model_name'] = str(model)
             if "attacker" in config_dict and "target_llm_config" in config_dict.get("attacker", {}):
-                config_dict["attacker"]["target_llm_config"] = load_yaml(endpoint_path)
+                config_dict["attacker"]["target_llm_config"]['llm_type'] = load_yaml(endpoint_path)['llm_type']
                 config_dict["attacker"]["target_llm_config"]['model_name'] = str(model)
 
         # Override device if specified
         if device:
-            config_dict["defender"]["target_llm_config"]["device_map"] = device
+            llm_type = config_dict["defender"]["target_llm_config"].get("llm_type", "")
+            if llm_type in ["HuggingFaceLLM"]:
+                config_dict["defender"]["target_llm_config"]["device_map"] = device
 
         # Enable or disable streaming in the configuration
         config_dict["defender"]["target_llm_gen_config"]["stream"] = stream

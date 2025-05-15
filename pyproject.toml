@@ -122,11 +122,11 @@ AutoDanAttacker = "panda_guard.role.attacks.autodan.autodan:AutoDanAttacker"
 GPTFuzzAttacker = "panda_guard.role.attacks.gptfuzzer_attack.gptfuzz:GPTFuzzAttacker"
 ColdAttacker = "panda_guard.role.attacks.cold_attack.cold:ColdAttacker"
 ReNeLLMAttacker = "panda_guard.role.attacks.renellm_attack:renellm.ReNeLLMAttacker"
-IcaAttacker = "panda_guard.role.attacks.ica.ica:IcaAttacker"
+IcaAttacker = "panda_guard.role.attacks.ica:IcaAttacker"
 RandomSearchAttacker = "panda_guard.role.attacks.random_search:RandomSearchAttacker"
 DeepInceptionAttacker = "panda_guard.role.attacks.deepinception:DeepInceptionAttacker"
 GPT4CipherAttacker = "panda_guard.role.attacks.gpt4_cipher:GPT4CipherAttacker"
-ScavAttacker = "panda_guard.role.attacks.scav.scav:ScavAttacker"
+ScavAttacker = "panda_guard.role.attacks.scav:ScavAttacker"
 
 [project.entry-points."panda_guard.attacker_configs"]
 TransferAttackerConfig = "panda_guard.role.attacks.transfer:TransferAttackerConfig"
@@ -141,11 +141,11 @@ AutoDanAttackerConfig = "panda_guard.role.attacks.autodan.autodan:AutoDanAttacke
 GPTFuzzAttackerConfig = "panda_guard.role.attacks.gptfuzzer_attack.gptfuzz:GPTFuzzAttackerConfig"
 ColdAttackerConfig = "panda_guard.role.attacks.cold_attack.cold:ColdAttackerConfig"
 ReNeLLMAttackerConfig = "panda_guard.role.attacks.renellm_attack:renellm.ReNeLLMAttackerConfig"
-IcaAttackerConfig = "panda_guard.role.attacks.ica.ica:IcaAttackerConfig"
+IcaAttackerConfig = "panda_guard.role.attacks.ica:IcaAttackerConfig"
 RandomSearchAttackerConfig = "panda_guard.role.attacks.random_search:RandomSearchAttackerConfig"
 DeepInceptionAttackerConfig = "panda_guard.role.attacks.deepinception:DeepInceptionAttackerConfig"
 GPT4CipherAttackerConfig = "panda_guard.role.attacks.gpt4_cipher:GPT4CipherAttackerConfig"
-ScavAttackerConfig = "panda_guard.role.attacks.scav.scav:ScavAttackerConfig"
+ScavAttackerConfig = "panda_guard.role.attacks.scav:ScavAttackerConfig"
 
 
 [project.entry-points."panda_guard.defenders"]

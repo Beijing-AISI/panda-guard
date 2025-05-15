@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from panda_guard.pipelines.inference import InferPipeline, InferPipelineConfig
 from panda_guard.utils import parse_configs_from_dict
 
-app = typer.Typer(help="Language model server and chat interface")
+app = typer.Typer(help="Language model server and chat interface", invoke_without_command=True)
 console = Console()
 
 # Global variables to store the pipeline instance
@@ -405,7 +405,7 @@ def create_fastapi_app(pipeline_instance):
     return api_app
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def start(
         config: Optional[str] = typer.Argument(None, help="Path to YAML configuration file"),
         defense: Optional[Path] = typer.Option(None, "--defense", "-d",

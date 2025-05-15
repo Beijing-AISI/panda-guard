@@ -21,7 +21,7 @@ from rich import box
 from panda_guard.pipelines.inference import InferPipeline, InferPipelineConfig
 from panda_guard.utils import parse_configs_from_dict
 
-app = typer.Typer(help="Run evaluation pipeline with Command Line")
+app = typer.Typer(help="Run evaluation pipeline with Command Line", invoke_without_command=True)
 console = Console()
 
 
@@ -143,7 +143,7 @@ def process_file(json_file, input_dir, output_dir, attacker_config, defender_con
         }, f, indent=4)
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def start(
         config: Optional[str] = typer.Argument(None, help="Path to YAML task file"),
         input_dir: str = typer.Option("./results", "--input-dir", "-i", help="Path to file where inference is required"),

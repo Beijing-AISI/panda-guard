@@ -117,7 +117,7 @@ class HuggingFaceLLM(BaseLLM):
             response_tokens = []
 
             def stream_response():
-                nonlocal full_content, generated_so_far, response_tokens
+                nonlocal full_content, generated_so_far, response_tokens, input_length
 
                 # Set up the streamer from transformers
                 from transformers import TextStreamer
@@ -137,7 +137,11 @@ class HuggingFaceLLM(BaseLLM):
                             return delta_text
                         else:
                             # For transformers versions that don't have token_buffer
-                            decoded = self.tokenizer.decode([value], skip_special_tokens=True)
+                            if isinstance(value, torch.Tensor):
+                                value = value.squeeze().tolist()
+                                decoded = self.tokenizer.decode(value, skip_special_tokens=True)
+                            else:
+                                decoded = self.tokenizer.decode([value], skip_special_tokens=True)
                             return decoded
 
                 # Create the custom streamer
@@ -156,7 +160,15 @@ class HuggingFaceLLM(BaseLLM):
                 # Process streamed tokens
                 last_text = ""
                 for token in streamer.output_tokens:
-                    response_tokens.append(token)
+                    # Ensure the input is a one-dimensional list of int, excluding the input prompt
+                    if isinstance(token, torch.Tensor):
+                        token = token.squeeze().tolist()
+                    if isinstance(token, list):
+                        if len(token) == input_length:
+                            continue
+                        response_tokens.extend(token)
+                    else:
+                        response_tokens.append(token)
                     current_text = self.tokenizer.decode(response_tokens, skip_special_tokens=True)
                     if current_text != last_text:
                         new_text = current_text[len(last_text):]
