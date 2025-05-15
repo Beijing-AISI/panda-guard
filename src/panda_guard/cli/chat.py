@@ -232,8 +232,8 @@ def start(
             endpoint_type = "openai"
             endpoint_path = get_package_config_path(f"endpoints/{endpoint_type}")
             config_dict["defender"]["target_llm_config"] = load_yaml(endpoint_path)
-        elif config and isinstance(config, str) and config.lower() in ["openai", "gemini", "claude"]:
-            endpoint_type = config.lower()
+        elif str(endpoint).lower() in ["openai", "gemini", "claude", "hf"]:
+            endpoint_type = str(endpoint).lower()
             endpoint_path = get_package_config_path(f"endpoints/{endpoint_type}")
             config_dict["defender"]["target_llm_config"] = load_yaml(endpoint_path)
         elif config and isinstance(config, str) and config.endswith(".yaml"):
