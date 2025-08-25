@@ -139,7 +139,23 @@ def run_inference(args):
     # Load evaluation dataset
     eval_set = load_dataset("/root/.cache/huggingface/datasets/tatsu-lab___alpaca_eval")['test']
     # eval_set = load_dataset("/home/floyed/.cache/huggingface/datasets/tatsu-lab___alpaca_eval")['test']
+    
+    # 去除instruction重复的样本，只保留第一次出现的
+    seen_instructions = set()
+    unique_indices = []
+    duplicate_count = 0
 
+    for i, item in enumerate(eval_set):
+        instruction = item.get('instruction', '')
+        if instruction not in seen_instructions:
+            seen_instructions.add(instruction)
+            unique_indices.append(i)
+        else:
+            duplicate_count += 1
+
+    # 选择唯一的样本
+    eval_set = eval_set.select(unique_indices)
+    
     # Run inference for each row
     if args.max_queries:
         eval_set = eval_set.select(range(min(len(eval_set), args.max_queries)))
