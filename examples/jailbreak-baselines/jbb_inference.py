@@ -101,8 +101,13 @@ def run_inference(args):
 
     # Load the main configuration and override attack/defense paths.
     config_dict = load_yaml(args.config)
-    config_dict["attacker"] = load_yaml(args.attack)
-    config_dict["defender"] = load_yaml(args.defense)
+    
+    attack_dict = load_yaml(args.attack)
+    if attack_dict:
+        config_dict["attacker"] = attack_dict
+    defense_dict = load_yaml(args.defense)
+    if defense_dict:
+        config_dict["defender"] = defense_dict
 
     if args.visible:
         logging.info(f"Loaded configuration: {config_dict}")
