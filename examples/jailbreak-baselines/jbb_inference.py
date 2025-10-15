@@ -158,7 +158,7 @@ def run_inference(args):
     )
 
     # Run inference for each row.
-    desc = f"{args.llm.split('/')[-1][:-5]}: {attacker_config.attacker_name} -> {defender_config.defender_name}"
+    desc = f"{llm_dict['model_name']}: {attacker_config.attacker_name} -> {defender_config.defender_name}"
     df = df.head(args.max_queries) if args.max_queries else df
     iterator = tqdm(df.iterrows(), total=len(df), desc=args.llm.split('/')[-1]) if args.visible else df.iterrows()
     results = []
