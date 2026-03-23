@@ -24,7 +24,7 @@ mutation: 0.01
 allow_non_ascii: False
 llm_mutation: False
 
-init_adv_prompts_path: "./src/panda_guard/role/attacks/autodan/prompt_group.yaml"
+init_adv_prompts_path: "../../src/panda_guard/role/attacks/autodan/prompt_group.yaml"
 
 #mutation_llm_gen_config:
 #mutation_llm_config:
