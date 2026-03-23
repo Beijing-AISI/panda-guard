@@ -401,7 +401,7 @@ class GCGAttacker(BaseAttacker):
                 if self.prefix_cache:
                     if not prefix_cache_batch or current_batch_size != search_batch_size:
                          with torch.no_grad():
-                            out = self.model(inputs_embeds=self.before_embeds.repeat(current_batch_size, 1, 1),
+                            out = self.llm.model(inputs_embeds=self.before_embeds.repeat(current_batch_size, 1, 1),
                                              use_cache=True)
                             prefix_cache_batch = out.past_key_values
                     outputs = self.llm.model(inputs_embeds=input_embeds_batch, past_key_values=prefix_cache_batch)
